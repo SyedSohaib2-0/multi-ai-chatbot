@@ -1,0 +1,125 @@
+# Google Cloud App Engine Configuration
+# For deploying Multi-AI Chatbot Enhanced to Google Cloud Platform
+
+runtime: nodejs18
+
+# Instance configuration
+instance_class: F2
+automatic_scaling:
+  min_instances: 1
+  max_instances: 10
+  target_cpu_utilization: 0.6
+
+# Network configuration
+network:
+  session_affinity: true
+
+# Environment variables (add your actual values)
+env_variables:
+  # Application Configuration
+  NODE_ENV: production
+  PORT: 8080
+  APP_NAME: "Multi-AI Chatbot Enhanced"
+  SITE_URL: "https://your-project-id.appspot.com"
+  FRONTEND_URL: "https://your-project-id.appspot.com"
+  
+  # Database Configuration (Cloud SQL)
+  # Replace with your actual Cloud SQL connection details
+  DB_HOST: "/cloudsql/your-project-id:us-central1:your-instance-name"
+  DB_PORT: "3306"
+  DB_USER: "chatbot-user"
+  DB_PASSWORD: "your-secure-database-password"
+  DB_NAME: "chatbot_users"
+  
+  # Security Configuration
+  # Generate secure random strings for production
+  SESSION_SECRET: "your-very-secure-session-secret-for-production"
+  JWT_SECRET: "your-jwt-secret-key-for-production"
+  
+  # AI Provider API Keys
+  # Add your actual API keys here
+  OPENROUTER_API_KEY: "your-openrouter-api-key"
+  OPENAI_API_KEY: "your-openai-api-key"
+  DEEPSEEK_API_KEY: "your-deepseek-api-key"
+  
+  # Cache Configuration
+  CACHE_TTL: "300"
+  
+  # File Upload Configuration
+  MAX_FILE_SIZE: "10485760"
+  UPLOAD_DIR: "/tmp/uploads"
+  
+  # Google Cloud Storage (for file uploads in production)
+  GCS_BUCKET_NAME: "your-storage-bucket-name"
+  GOOGLE_CLOUD_PROJECT_ID: "your-project-id"
+  
+  # Additional Configuration
+  DEBUG_MODE: "false"
+  ENABLE_CORS: "true"
+  TRUST_PROXY: "true"
+
+# Skip files during deployment
+skip_files:
+  - ^(.*/)?#.*#$
+  - ^(.*/)?.*~$
+  - ^(.*/)?.*\.py[co]$
+  - ^(.*/)?.*/RCS/.*$
+  - ^(.*/)?\..*$
+  - ^(.*/)?tests?/.*$
+  - ^(.*/)?test/.*$
+  - ^(.*/)?node_modules/.*$
+  - ^(.*/)?uploads/.*$
+  - README\.md$
+  - \.env$
+  - \.env\..*$
+
+# Health check configuration
+health_check:
+  enable_health_check: true
+  check_interval_sec: 5
+  timeout_sec: 4
+  unhealthy_threshold: 2
+  healthy_threshold: 2
+  restart_threshold: 60
+
+# Liveness and readiness checks
+liveness_check:
+  path: "/api/health"
+  check_interval_sec: 30
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 1
+
+readiness_check:
+  path: "/api/health"
+  check_interval_sec: 5
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 1
+  app_start_timeout_sec: 300
+
+# Beta features (optional)
+beta_settings:
+  cloud_sql_instances: "your-project-id:us-central1:your-instance-name"
+
+# VPC access connector (if using VPC)
+# vpc_access_connector:
+#   name: "projects/your-project-id/locations/us-central1/connectors/your-connector-name"
+
+# Static file handlers
+handlers:
+  # Handle static files
+  - url: /static
+    static_dir: public
+    secure: always
+    
+  # Handle favicon
+  - url: /favicon\.ico
+    static_files: public/favicon.ico
+    upload: public/favicon\.ico
+    secure: always
+    
+  # Handle all other routes with Node.js app
+  - url: /.*
+    script: auto
+    secure: always

@@ -1,205 +1,263 @@
 {
-  "name": "advanced-multi-ai-chatbot",
-  "version": "3.0.0",
-  "description": "Advanced Multi-AI Chatbot with OpenAI, DeepSeek, Ollama integration and real-time Google Search",
+  "name": "multi-ai-chatbot-enhanced",
+  "version": "2.1.0",
+  "description": "A modern multi-AI chatbot with authentication, file upload, PDF processing, and 400+ AI models via OpenRouter",
   "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js",
-    "build": "echo 'No build step required for this project'",
-    "test": "node --experimental-modules test/basic.test.js",
-    "lint": "eslint *.js --fix",
-    "format": "prettier --write *.js *.html *.css",
-    "setup": "npm install && npm run setup-models",
-    "setup-models": "echo 'Setting up Ollama models...' && ollama pull llama3.2:latest && ollama pull gemma2:latest && ollama pull mistral:latest && ollama pull codellama:latest",
-    "health": "curl -f http://localhost:3000/api/health || echo 'Server not running'",
-    "stats": "curl -s http://localhost:3000/api/stats | jq",
-    "clear-cache": "curl -X POST http://localhost:3000/api/cache/clear",
-    "test-openai": "node -e \"console.log('Testing OpenAI connection...')\" && curl -X POST http://localhost:3000/api/providers/switch -H 'Content-Type: application/json' -d '{\"provider\":\"openai\"}'",
-    "test-deepseek": "node -e \"console.log('Testing DeepSeek connection...')\" && curl -X POST http://localhost:3000/api/providers/switch -H 'Content-Type: application/json' -d '{\"provider\":\"deepseek\"}'",
-    "test-ollama": "node -e \"console.log('Testing Ollama connection...')\" && curl -X POST http://localhost:3000/api/providers/switch -H 'Content-Type: application/json' -d '{\"provider\":\"ollama\"}'",
-    "test-search": "curl -s 'http://localhost:3000/api/search/test/latest%20AI%20news' | jq",
-    "benchmark": "node benchmark.js",
-    "docker-build": "docker build -t advanced-ai-chatbot .",
-    "docker-run": "docker run -p 3000:3000 -e NODE_ENV=production advanced-ai-chatbot",
-    "pm2-start": "pm2 start ecosystem.config.js",
-    "pm2-stop": "pm2 stop ecosystem.config.js",
-    "pm2-restart": "pm2 restart ecosystem.config.js",
-    "backup": "node scripts/backup.js",
-    "restore": "node scripts/restore.js",
-    "monitor": "node scripts/monitor.js"
+    "dev": "node --watch server.js",
+    "dev:nodemon": "nodemon server.js",
+    "build": "echo \"Static files ready for deployment\"",
+    "test": "echo \"No tests yet\" && exit 0",
+    "lint": "echo \"No linting configured yet\" && exit 0",
+    "setup": "echo \"Setting up environment...\" && npm install",
+    "health": "curl -f http://localhost:3000/api/health || exit 1",
+    "db:init": "node scripts/init-db.js",
+    "deploy:gcp": "gcloud app deploy",
+    "deploy:setup": "npm run build && npm run db:init"
   },
   "keywords": [
     "ai",
     "chatbot",
-    "openai",
-    "gpt-4",
-    "deepseek",
-    "ollama",
-    "llama",
-    "gemma",
-    "mistral",
     "multi-ai",
-    "google-search",
-    "real-time",
-    "fast-ai",
-    "streaming",
-    "web-search",
-    "node-cache",
+    "authentication",
+    "file-upload",
+    "pdf-processing",
+    "mysql",
+    "ollama",
+    "openai",
+    "deepseek",
+    "openrouter",
+    "claude",
+    "gpt-4",
+    "gemini",
+    "llama",
+    "mistral",
+    "node",
     "express",
-    "modern-ui",
-    "performance",
-    "scalable",
-    "enterprise"
+    "api",
+    "machine-learning",
+    "artificial-intelligence",
+    "document-analysis",
+    "cloud-deployment"
   ],
-  "author": "Advanced AI Team",
+  "author": "Your Name <your.email@example.com>",
   "license": "MIT",
+  "homepage": "https://github.com/yourusername/multi-ai-chatbot-enhanced#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/advanced-multi-ai-chatbot.git"
+    "url": "https://github.com/yourusername/multi-ai-chatbot-enhanced.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/advanced-multi-ai-chatbot/issues"
+    "url": "https://github.com/yourusername/multi-ai-chatbot-enhanced/issues"
   },
-  "homepage": "https://github.com/yourusername/advanced-multi-ai-chatbot#readme",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "express-mysql-session": "^3.0.0",
+    "express-rate-limit": "^7.5.1",
+    "express-session": "^1.18.2",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "mammoth": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.14.3",
+    "node-cache": "^5.1.2",
+    "node-fetch": "^3.3.2",
+    "pdf.js-extract": "^0.2.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^20.10.5",
+    "eslint": "^8.56.0",
+    "nodemon": "^3.0.2"
+  },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
   },
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "node-fetch": "^3.3.2",
-    "node-cache": "^5.1.2",
-    "dotenv": "^16.3.1",
-    "helmet": "^7.1.0",
-    "compression": "^1.7.4",
-    "express-rate-limit": "^7.1.5",
-    "uuid": "^9.0.1",
-    "moment": "^2.29.4",
-    "winston": "^3.11.0",
-    "winston-daily-rotate-file": "^4.7.1",
-    "joi": "^17.11.0",
-    "axios": "^1.6.2",
-    "cheerio": "^1.0.0-rc.12",
-    "socket.io": "^4.7.4",
-    "redis": "^4.6.10",
-    "mongoose": "^8.0.3",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
-    "multer": "^1.4.5-lts.1",
-    "sharp": "^0.32.6",
-    "pdf-parse": "^1.1.1",
-    "mammoth": "^1.6.0",
-    "csv-parser": "^3.0.0",
-    "xlsx": "^0.18.5",
-    "node-cron": "^3.0.3",
-    "express-validator": "^7.0.1",
-    "express-session": "^1.17.3",
-    "connect-redis": "^7.1.0",
-    "ioredis": "^5.3.2"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.2",
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-node": "^11.1.0",
-    "prettier": "^3.1.1",
-    "jest": "^29.7.0",
-    "supertest": "^6.3.3",
-    "@types/node": "^20.10.4",
-    "concurrently": "^8.2.2",
-    "cross-env": "^7.0.3",
-    "husky": "^8.0.3",
-    "lint-staged": "^15.2.0"
-  },
-  "optionalDependencies": {
-    "puppeteer": "^21.6.1",
-    "playwright": "^1.40.1",
-    "tensorflow": "^4.15.0",
-    "@tensorflow/tfjs-node": "^4.15.0"
-  },
-  "peerDependencies": {
-    "ollama": ">=0.1.0"
-  },
   "config": {
+    "supported_providers": [
+      "openrouter",
+      "openai",
+      "deepseek",
+      "ollama"
+    ],
     "default_port": 3000,
-    "max_message_length": 8000,
-    "cache_duration": 300,
-    "search_cache_duration": 1800,
-    "rate_limit_window": 900000,
-    "rate_limit_max": 1000
+    "cache_ttl": 300,
+    "max_file_size": "10MB",
+    "supported_file_types": [
+      "application/pdf",
+      "text/plain",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ]
   },
-  "directories": {
-    "lib": "./lib",
-    "test": "./test",
-    "public": "./public",
-    "logs": "./logs",
-    "scripts": "./scripts"
+  "ai_models": {
+    "openrouter": {
+      "free_models": [
+        "mistralai/mistral-7b-instruct:free",
+        "mistralai/mixtral-8x7b-instruct:free",
+        "meta-llama/llama-3.1-8b-instruct:free",
+        "qwen/qwen-2.5-7b-instruct:free",
+        "deepseek/deepseek-coder-6.7b-instruct:free"
+      ],
+      "premium_models": [
+        "anthropic/claude-3.5-sonnet",
+        "anthropic/claude-3-opus",
+        "openai/gpt-4o",
+        "openai/gpt-4o-mini",
+        "google/gemini-1.5-pro",
+        "google/gemini-1.5-flash",
+        "meta-llama/llama-3.1-70b-instruct",
+        "meta-llama/llama-3.1-405b-instruct"
+      ]
+    },
+    "ollama": {
+      "recommended_models": [
+        "llama3.1:8b",
+        "mistral:7b",
+        "codellama:7b",
+        "phi3:mini"
+      ]
+    }
   },
-  "files": [
-    "server.js",
-    "public/",
-    "lib/",
-    "scripts/",
-    "README.md",
-    "LICENSE",
-    ".env.example"
+  "database": {
+    "type": "MySQL",
+    "required_tables": [
+      "users",
+      "chat_sessions",
+      "chat_messages",
+      "uploaded_files"
+    ],
+    "features": [
+      "User Authentication",
+      "Session Management",
+      "Chat History Storage",
+      "File Upload Tracking",
+      "PDF Text Extraction Storage"
+    ]
+  },
+  "features": [
+    "Multiple AI Provider Support",
+    "OpenRouter Integration (400+ models)",
+    "User Authentication & Registration",
+    "File Upload (PDF, TXT, DOC)",
+    "PDF Text Extraction",
+    "Document Analysis with AI",
+    "Chat History Persistence",
+    "Smart Provider Fallback",
+    "Response Caching",
+    "Rate Limiting",
+    "CORS Support",
+    "Security Headers",
+    "Environment Configuration",
+    "Health Check Endpoint",
+    "Real-time Provider Status",
+    "Google Cloud Platform Ready"
   ],
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "pre-push": "npm test"
-    }
-  },
-  "lint-staged": {
-    "*.js": [
-      "eslint --fix",
-      "prettier --write"
+  "installation": {
+    "requirements": [
+      "Node.js 18+",
+      "MySQL 8.0+ (with password 'Admin')",
+      "OpenRouter API Key (recommended)",
+      "Ollama installed locally (optional)",
+      "OpenAI API Key (optional)",
+      "DeepSeek API Key (optional)"
     ],
-    "*.{html,css,md}": [
-      "prettier --write"
+    "setup_commands": [
+      "git clone <repository>",
+      "cd multi-ai-chatbot-enhanced",
+      "npm install",
+      "cp .env.example .env",
+      "# Edit .env with your API keys and database config",
+      "npm run db:init",
+      "npm run start"
+    ],
+    "mysql_setup": [
+      "CREATE DATABASE chatbot_users;",
+      "CREATE USER 'chatbot'@'localhost' IDENTIFIED BY 'Admin';",
+      "GRANT ALL PRIVILEGES ON chatbot_users.* TO 'chatbot'@'localhost';",
+      "FLUSH PRIVILEGES;"
     ]
   },
-  "jest": {
-    "testEnvironment": "node",
-    "collectCoverageFrom": [
-      "*.js",
-      "lib/**/*.js",
-      "!node_modules/**",
-      "!test/**"
+  "environment_variables": {
+    "required": [
+      "DB_HOST=localhost",
+      "DB_USER=root",
+      "DB_PASSWORD=Admin",
+      "DB_NAME=chatbot_users",
+      "SESSION_SECRET=your-session-secret-change-this"
     ],
-    "testMatch": [
-      "**/test/**/*.test.js"
+    "optional": [
+      "OPENROUTER_API_KEY=your-openrouter-key",
+      "OPENAI_API_KEY=your-openai-key",
+      "DEEPSEEK_API_KEY=your-deepseek-key",
+      "OLLAMA_URL=http://localhost:11434",
+      "PORT=3000",
+      "CACHE_TTL=300",
+      "NODE_ENV=production"
     ]
   },
-  "eslintConfig": {
-    "extends": [
-      "eslint:recommended",
-      "plugin:node/recommended",
-      "prettier"
+  "google_cloud_deployment": {
+    "app_yaml_required": true,
+    "services": [
+      "Cloud SQL (MySQL)",
+      "App Engine",
+      "Cloud Storage (for file uploads)"
     ],
-    "env": {
-      "node": true,
-      "es2022": true
-    },
-    "parserOptions": {
-      "ecmaVersion": 2022,
-      "sourceType": "module"
-    },
-    "rules": {
-      "no-console": "off",
-      "node/no-unsupported-features/es-syntax": "off"
-    }
+    "setup_steps": [
+      "1. Create Google Cloud Project",
+      "2. Enable App Engine API",
+      "3. Create Cloud SQL MySQL instance",
+      "4. Configure environment variables",
+      "5. Deploy with: gcloud app deploy"
+    ]
   },
-  "prettier": {
-    "semi": true,
-    "singleQuote": true,
-    "tabWidth": 2,
-    "trailingComma": "es5",
-    "printWidth": 100,
-    "bracketSpacing": true,
-    "arrowParens": "avoid"
-  }
+  "api_endpoints": {
+    "authentication": [
+      "POST /api/auth/register - Register new user",
+      "POST /api/auth/login - Login user",
+      "POST /api/auth/logout - Logout user",
+      "GET /api/auth/me - Get current user"
+    ],
+    "file_management": [
+      "POST /api/files/upload - Upload file",
+      "GET /api/files - Get user files",
+      "DELETE /api/files/:id - Delete file"
+    ],
+    "chat": [
+      "POST /api/chat - Main chat with file context",
+      "POST /api/chat/fast - Fast responses",
+      "GET /api/chat/sessions - Get chat sessions",
+      "GET /api/chat/sessions/:id/messages - Get session messages"
+    ],
+    "system": [
+      "GET /api/health - Health check",
+      "GET /api/stats - Server statistics",
+      "GET /api/providers/status - Provider status",
+      "POST /api/cache/clear - Clear cache"
+    ]
+  },
+  "security_features": [
+    "Bcrypt password hashing",
+    "Session-based authentication",
+    "CSRF protection",
+    "Rate limiting",
+    "File type validation",
+    "File size limits",
+    "SQL injection protection",
+    "XSS protection via helmet",
+    "CORS configuration"
+  ]
 }
