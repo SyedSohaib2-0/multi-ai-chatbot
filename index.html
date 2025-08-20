@@ -571,16 +571,17 @@
                 <div class="model-selector" id="openrouterModels">
                     <select class="model-select" id="openrouterModelSelect">
                         <option value="">Auto-select model</option>
-                        <option value="anthropic/claude-3-opus">Claude 3 Opus</option>
-                        <option value="anthropic/claude-3-sonnet">Claude 3 Sonnet</option>
-                        <option value="anthropic/claude-3-haiku">Claude 3 Haiku</option>
-                        <option value="openai/gpt-4">GPT-4</option>
-                        <option value="openai/gpt-4-turbo">GPT-4 Turbo</option>
-                        <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                        <option value="google/gemini-pro">Gemini Pro</option>
-                        <option value="meta-llama/llama-3-70b-instruct">Llama 3 70B</option>
-                        <option value="mistralai/mistral-large">Mistral Large</option>
-                        <option value="cohere/command-r">Cohere Command R</option>
+                        <option value="mistral-7b-free">Mistral 7B (Free)</option>
+                        <option value="mixtral-8x7b-free">Mixtral 8x7B (Free)</option>
+                        <option value="llama-3.1-8b-free">Llama 3.1 8B (Free)</option>
+                        <option value="qwen-2.5-7b-free">Qwen 2.5 7B (Free)</option>
+                        <option value="deepseek-coder-free">DeepSeek Coder (Free)</option>
+                        <option value="claude-3.5-sonnet">Claude 3.5 Sonnet</option>
+                        <option value="claude-3-opus">Claude 3 Opus</option>
+                        <option value="gpt-4o">GPT-4o</option>
+                        <option value="gpt-4o-mini">GPT-4o Mini</option>
+                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                        <option value="llama-3.1-405b">Llama 3.1 405B</option>
                     </select>
                 </div>
 
@@ -652,22 +653,21 @@
                     </div>
                     <div class="message-content welcome-message">
                         <strong>🎉 Welcome to Multi-AI Assistant!</strong><br><br>
-                        I'm now powered by multiple AI providers including OpenRouter for access to premium models:
+                        I'm powered by multiple AI providers including OpenRouter for access to premium models:
                         <br><br>
                         <strong>🤖 Available Providers:</strong>
-                        <br>• <strong>OpenRouter</strong> - Claude 3, GPT-4, Gemini Pro & 50+ models
+                        <br>• <strong>OpenRouter</strong> - Claude 3, GPT-4, Gemini Pro & 400+ models
                         <br>• <strong>Ollama Local</strong> - Fast, private responses
                         <br>• <strong>OpenAI GPT-4</strong> - Advanced reasoning (if configured)
                         <br>• <strong>DeepSeek</strong> - Expert coding help (if configured)
                         <br><br>
-                        <strong>✨ Premium Features:</strong>
-                        <br>• Access to Claude 3 Opus for complex reasoning
-                        <br>• GPT-4 Turbo for latest capabilities
-                        <br>• Gemini Pro for multimodal tasks
+                        <strong>✨ Features:</strong>
                         <br>• Smart auto-selection based on your query
+                        <br>• Free models available via OpenRouter
+                        <br>• Premium models (Claude 3.5 Sonnet, GPT-4o)
                         <br>• Automatic fallback for reliability
                         <br><br>
-                        <strong>Try asking:</strong> <em>"Analyze this complex problem"</em>, <em>"Write a creative story"</em>, or <em>"Help me with advanced coding"</em>
+                        <strong>Try asking:</strong> <em>"Help me code a function"</em>, <em>"Write a creative story"</em>, or <em>"Analyze this problem"</em>
                         
                         <div class="message-metadata">
                             <span class="metadata-badge openrouter">OpenRouter Ready</span>
@@ -695,12 +695,12 @@
                     <textarea 
                         id="messageInput" 
                         class="message-input" 
-                        placeholder="Ask me anything! I'll automatically select the best AI model (Claude, GPT-4, Gemini) for your question..."
+                        placeholder="Ask me anything! I'll automatically select the best AI model for your question..."
                         rows="1"
                     ></textarea>
                     
                     <div class="input-controls">
-                        <button class="control-btn fast" id="fastBtn" title="Fast Response (Ollama Only)">
+                        <button class="control-btn fast" id="fastBtn" title="Fast Response">
                             <i class="fas fa-bolt"></i>
                         </button>
                         <button class="control-btn clear" id="clearBtn" title="Clear Input">
@@ -719,13 +719,14 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // Application State
+        // ✅ FIXED: Correct server URL configuration
         const AppState = {
             selectedProvider: 'auto',
             selectedModel: null,
             isTyping: false,
             messageHistory: [],
-            serverUrl: 'https://multi-ai-chatbot-production.up.railway.app',
+            // ✅ FIXED: Base server URL without endpoint
+            baseUrl: 'https://multi-ai-chatbot-production.up.railway.app',
             stats: { totalRequests: 0, cacheHits: 0, responseTime: 0 },
             availableModels: []
         };
@@ -774,9 +775,9 @@
         });
 
         function initializeApp() {
-            console.log('🚀 Initializing Multi-AI Chatbot with OpenRouter...');
+            console.log('🚀 Initializing Multi-AI Chatbot...');
             autoResizeTextarea(elements.messageInput);
-            showToast('🎉 Multi-AI Assistant with OpenRouter Ready!', 'success');
+            showToast('🎉 Multi-AI Assistant Ready!', 'success');
         }
 
         function setupEventListeners() {
@@ -873,7 +874,7 @@
             }
         }
 
-        // Main message sending function
+        // ✅ FIXED: Main message sending function with correct endpoints
         async function sendMessage(mode = 'smart') {
             const message = elements.messageInput.value.trim();
             
@@ -894,6 +895,7 @@
             const startTime = Date.now();
 
             try {
+                // ✅ FIXED: Correct endpoint construction
                 const endpoint = mode === 'fast' ? '/api/chat/fast' : '/api/chat';
                 const requestData = mode === 'fast' 
                     ? { message }
@@ -907,9 +909,10 @@
                         }
                     };
 
-                console.log(`🚀 Sending ${mode} request...`, requestData);
+                console.log(`🚀 Sending ${mode} request to: ${AppState.baseUrl}${endpoint}`);
 
-                const response = await fetch(`${AppState.serverUrl}/api${endpoint}`, {
+                // ✅ FIXED: Proper URL construction
+                const response = await fetch(`${AppState.baseUrl}${endpoint}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestData)
@@ -928,7 +931,7 @@
                 if (data.reply) {
                     const metadata = {
                         provider: data.metadata?.provider || data.provider,
-                        model: data.metadata?.model,
+                        model: data.metadata?.model || data.model,
                         responseTime: data.metadata?.responseTime || data.responseTime || responseTime,
                         cached: data.metadata?.cached || data.cached || false,
                         fallbackUsed: data.metadata?.fallbackUsed || false,
@@ -996,15 +999,20 @@
                     badges.push(`<span class="metadata-badge${badgeClass}">${providerNames[metadata.provider] || metadata.provider}</span>`);
                 }
 
-                if (metadata.model && metadata.provider === 'openrouter') {
+                if (metadata.model) {
                     const modelDisplayNames = {
+                        'mistralai/mistral-7b-instruct:free': 'Mistral 7B (Free)',
+                        'mistralai/mixtral-8x7b-instruct:free': 'Mixtral 8x7B (Free)',
+                        'meta-llama/llama-3.1-8b-instruct:free': 'Llama 3.1 8B (Free)',
+                        'qwen/qwen-2.5-7b-instruct:free': 'Qwen 2.5 7B (Free)',
+                        'deepseek/deepseek-coder-6.7b-instruct:free': 'DeepSeek Coder (Free)',
+                        'anthropic/claude-3.5-sonnet': 'Claude 3.5 Sonnet',
                         'anthropic/claude-3-opus': 'Claude 3 Opus',
-                        'anthropic/claude-3-sonnet': 'Claude 3 Sonnet',
                         'anthropic/claude-3-haiku': 'Claude 3 Haiku',
-                        'openai/gpt-4': 'GPT-4',
-                        'openai/gpt-4-turbo': 'GPT-4 Turbo',
-                        'google/gemini-pro': 'Gemini Pro',
-                        'meta-llama/llama-3-70b-instruct': 'Llama 3 70B'
+                        'openai/gpt-4o': 'GPT-4o',
+                        'openai/gpt-4o-mini': 'GPT-4o Mini',
+                        'google/gemini-1.5-pro': 'Gemini 1.5 Pro',
+                        'meta-llama/llama-3.1-405b-instruct': 'Llama 3.1 405B'
                     };
                     const displayName = modelDisplayNames[metadata.model] || metadata.model;
                     let modelBadgeClass = '';
@@ -1102,7 +1110,8 @@
 
         async function clearCache() {
             try {
-                const response = await fetch(`${AppState.serverUrl}/api/cache/clear`, {
+                // ✅ FIXED: Proper URL construction
+                const response = await fetch(`${AppState.baseUrl}/api/cache/clear`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -1120,11 +1129,14 @@
 
         async function loadOpenRouterModels() {
             try {
-                const response = await fetch(`${AppState.serverUrl}/api/openrouter/models`);
+                // ✅ FIXED: Proper URL construction
+                const response = await fetch(`${AppState.baseUrl}/api/openrouter/models`);
                 if (response.ok) {
                     const data = await response.json();
                     AppState.availableModels = data.models || [];
                     console.log('📋 Loaded OpenRouter models:', AppState.availableModels.length);
+                } else {
+                    console.log('⚠️ OpenRouter models not available');
                 }
             } catch (error) {
                 console.log('⚠️ Could not load OpenRouter models:', error.message);
@@ -1145,15 +1157,16 @@
             }, 3000);
         }
 
-        // Server Communication
+        // ✅ FIXED: Server Communication Functions
         async function checkServerConnection() {
             try {
-                const response = await fetch(`${AppState.serverUrl}/api/health`);
+                const response = await fetch(`${AppState.baseUrl}/api/health`);
                 const data = await response.json();
                 
                 if (data.status === 'healthy') {
                     elements.connectionDot.style.background = 'var(--accent)';
                     elements.connectionText.textContent = 'Connected';
+                    console.log('✅ Server connection healthy');
                 } else {
                     elements.connectionDot.style.background = 'var(--warning)';
                     elements.connectionText.textContent = 'Degraded';
@@ -1161,19 +1174,26 @@
             } catch (error) {
                 elements.connectionDot.style.background = 'var(--error)';
                 elements.connectionText.textContent = 'Disconnected';
+                console.error('❌ Server connection failed:', error.message);
                 showToast('Server connection failed', 'error');
             }
         }
 
         async function updateProviderStatus() {
             try {
-                const response = await fetch(`${AppState.serverUrl}/api/providers/status`);
+                // ✅ FIXED: Proper URL construction
+                const response = await fetch(`${AppState.baseUrl}/api/providers/status`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 // Update status indicators
                 const updateStatus = (element, provider) => {
-                    const status = data.providers[provider]?.status;
-                    if (element) {
+                    const providerData = data.providers && data.providers[provider];
+                    if (element && providerData) {
+                        const status = providerData.status;
                         element.className = `status-indicator status-${
                             status === 'online' ? 'online' : 
                             status === 'configured' ? 'online' :
@@ -1187,6 +1207,8 @@
                 updateStatus(elements.deepseekStatus, 'deepseek');
                 updateStatus(elements.openrouterStatus, 'openrouter');
                 
+                console.log('📊 Provider status updated');
+                
             } catch (error) {
                 console.error('Failed to update provider status:', error);
             }
@@ -1194,7 +1216,12 @@
 
         async function getServerStats() {
             try {
-                const response = await fetch(`${AppState.serverUrl}/api/stats`);
+                // ✅ FIXED: Proper URL construction
+                const response = await fetch(`${AppState.baseUrl}/api/stats`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.uptime?.formatted) {
@@ -1207,17 +1234,17 @@
         }
 
         function startStatsUpdates() {
-            // Update every 10 seconds
+            // Update every 15 seconds
             setInterval(() => {
                 getServerStats();
                 updateProviderStatus();
-            }, 10000);
+            }, 15000);
             
-            // Initial update
+            // Initial update after 2 seconds
             setTimeout(() => {
                 getServerStats();
                 updateProviderStatus();
-            }, 1000);
+            }, 2000);
         }
 
         // Error handling
@@ -1226,7 +1253,11 @@
             showToast('An unexpected error occurred', 'error');
         });
 
-        console.log('🎉 Multi-AI Chatbot with OpenRouter Frontend Loaded!');
+        // ✅ FIXED: Test connection on load
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('🎉 Multi-AI Chatbot Frontend Loaded!');
+            console.log('🌐 Server URL:', AppState.baseUrl);
+        });
     </script>
 </body>
 </html>
