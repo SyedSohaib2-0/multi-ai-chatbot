@@ -627,9 +627,8 @@ app.get('/api/openrouter/models', (req, res) => {
     });
 });
 
-// Root endpoint - serve frontend
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Handle 404
