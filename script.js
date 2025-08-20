@@ -17,7 +17,7 @@ function sendMessage() {
     const typingMsg = addMessage("🤖 Thinking...", "bot");
     
     // FIXED: Correct API endpoint
-    fetch("http://localhost:3000/api/generate", {  // Changed from /chat to /api/generate
+    fetch("https://chatbot-ui-production-5c1b.up.railway.app/api/generate", {  // Changed from /chat to /api/generate
         method: "POST",
         headers: { 
             "Content-Type": "application/json",
@@ -84,7 +84,7 @@ function addMessage(text, sender) {
 // Optional: Add connection test on page load
 window.addEventListener('DOMContentLoaded', function() {
     // Test server connection
-    fetch("http://localhost:3000/api/health")
+    fetch("https://chatbot-ui-production-5c1b.up.railway.app/api/generate")
         .then(res => res.json())
         .then(data => {
             console.log("✅ Backend connected:", data.status);
