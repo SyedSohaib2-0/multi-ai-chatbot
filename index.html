@@ -61,7 +61,6 @@
             font-weight: 700;
             margin-bottom: 30px;
             color: var(--primary-light);
-            cursor: pointer;
         }
 
         .section {
@@ -489,21 +488,6 @@
         .toast.error { border-left: 4px solid var(--error); }
         .toast.warning { border-left: 4px solid var(--warning); }
 
-        /* Debug info */
-        .debug-info {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 11px;
-            font-family: monospace;
-            max-width: 300px;
-            z-index: 999;
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
@@ -587,15 +571,16 @@
                 <div class="model-selector" id="openrouterModels">
                     <select class="model-select" id="openrouterModelSelect">
                         <option value="">Auto-select model</option>
-                        <option value="mistral-7b">Mistral 7B (Free)</option>
-                        <option value="mixtral-8x7b">Mixtral 8x7B (Free)</option>
-                        <option value="llama-3.1-8b">Llama 3.1 8B (Free)</option>
-                        <option value="claude-3.5-sonnet">Claude 3.5 Sonnet</option>
-                        <option value="claude-3-opus">Claude 3 Opus</option>
-                        <option value="claude-3-haiku">Claude 3 Haiku</option>
-                        <option value="gpt-4o">GPT-4o</option>
-                        <option value="gpt-4o-mini">GPT-4o Mini</option>
-                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                        <option value="anthropic/claude-3-opus">Claude 3 Opus</option>
+                        <option value="anthropic/claude-3-sonnet">Claude 3 Sonnet</option>
+                        <option value="anthropic/claude-3-haiku">Claude 3 Haiku</option>
+                        <option value="openai/gpt-4">GPT-4</option>
+                        <option value="openai/gpt-4-turbo">GPT-4 Turbo</option>
+                        <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                        <option value="google/gemini-pro">Gemini Pro</option>
+                        <option value="meta-llama/llama-3-70b-instruct">Llama 3 70B</option>
+                        <option value="mistralai/mistral-large">Mistral Large</option>
+                        <option value="cohere/command-r">Cohere Command R</option>
                     </select>
                 </div>
 
@@ -646,14 +631,6 @@
                         <p>Remove all messages</p>
                     </div>
                 </div>
-
-                <div class="provider-btn" id="testBtn">
-                    <div class="provider-icon"><i class="fas fa-flask"></i></div>
-                    <div class="provider-info">
-                        <h4>Test Connection</h4>
-                        <p>Check server status</p>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -663,7 +640,7 @@
                 <div class="chat-title">🚀 Multi-AI Assistant</div>
                 <div class="connection-status">
                     <div class="connection-dot" id="connectionDot"></div>
-                    <span id="connectionText">Connecting...</span>
+                    <span id="connectionText">Connected</span>
                 </div>
             </div>
 
@@ -675,7 +652,7 @@
                     </div>
                     <div class="message-content welcome-message">
                         <strong>🎉 Welcome to Multi-AI Assistant!</strong><br><br>
-                        I'm powered by multiple AI providers including OpenRouter for access to premium models:
+                        I'm now powered by multiple AI providers including OpenRouter for access to premium models:
                         <br><br>
                         <strong>🤖 Available Providers:</strong>
                         <br>• <strong>OpenRouter</strong> - Claude 3, GPT-4, Gemini Pro & 50+ models
@@ -690,7 +667,7 @@
                         <br>• Smart auto-selection based on your query
                         <br>• Automatic fallback for reliability
                         <br><br>
-                        <strong>Try asking:</strong> <em>"Hello, can you help me?"</em> to test the connection!
+                        <strong>Try asking:</strong> <em>"Analyze this complex problem"</em>, <em>"Write a creative story"</em>, or <em>"Help me with advanced coding"</em>
                         
                         <div class="message-metadata">
                             <span class="metadata-badge openrouter">OpenRouter Ready</span>
@@ -723,10 +700,10 @@
                     ></textarea>
                     
                     <div class="input-controls">
-                        <button class="control-btn fast" id="fastBtn" title="Fast Response">
+                        <button class="control-btn fast" id="fastBtn" title="Fast Response (Ollama Only)">
                             <i class="fas fa-bolt"></i>
                         </button>
-                        <button class="control-btn clear" id="clearInputBtn" title="Clear Input">
+                        <button class="control-btn clear" id="clearBtn" title="Clear Input">
                             <i class="fas fa-times"></i>
                         </button>
                         <button class="control-btn" id="sendBtn" title="Send Message">
@@ -741,11 +718,6 @@
     <!-- Toast Notification -->
     <div class="toast" id="toast"></div>
 
-    <!-- Debug Info -->
-    <div class="debug-info" id="debugInfo" style="display: none;">
-        <div id="debugContent"></div>
-    </div>
-
     <script>
         // Application State
         const AppState = {
@@ -753,10 +725,9 @@
             selectedModel: null,
             isTyping: false,
             messageHistory: [],
-            serverUrl: 'https://multi-ai-chatbot-production.up.railway.app',
+            serverUrl: 'http://localhost:3000',
             stats: { totalRequests: 0, cacheHits: 0, responseTime: 0 },
-            availableModels: [],
-            debugMode: false
+            availableModels: []
         };
 
         // DOM Elements
@@ -765,11 +736,9 @@
             messagesContainer: document.getElementById('messagesContainer'),
             sendBtn: document.getElementById('sendBtn'),
             fastBtn: document.getElementById('fastBtn'),
-            clearInputBtn: document.getElementById('clearInputBtn'),
+            clearBtn: document.getElementById('clearBtn'),
             typingIndicator: document.getElementById('typingIndicator'),
             toast: document.getElementById('toast'),
-            debugInfo: document.getElementById('debugInfo'),
-            debugContent: document.getElementById('debugContent'),
             
             // Stats
             totalRequests: document.getElementById('totalRequests'),
@@ -791,289 +760,356 @@
             
             // Buttons
             clearCacheBtn: document.getElementById('clearCacheBtn'),
-            clearChatBtn: document.getElementById('clearChatBtn'),
-            testBtn: document.getElementById('testBtn')
+            clearChatBtn: document.getElementById('clearChatBtn')
         };
 
-        // Debug function
-        function debug(message, data = null) {
-            console.log('🛠', message, data);
-            if (AppState.debugMode) {
-                const timestamp = new Date().toLocaleTimeString();
-                elements.debugContent.innerHTML += `<div>[${timestamp}] ${message}</div>`;
-                if (data) elements.debugContent.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-                elements.debugInfo.scrollTop = elements.debugInfo.scrollHeight;
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupEventListeners();
+            checkServerConnection();
+            updateProviderStatus();
+            loadOpenRouterModels();
+            startStatsUpdates();
+        });
+
+        function initializeApp() {
+            console.log('🚀 Initializing Multi-AI Chatbot with OpenRouter...');
+            autoResizeTextarea(elements.messageInput);
+            showToast('🎉 Multi-AI Assistant with OpenRouter Ready!', 'success');
+        }
+
+        function setupEventListeners() {
+            // Input handlers
+            elements.messageInput.addEventListener('input', handleInputChange);
+            elements.messageInput.addEventListener('keypress', handleKeyPress);
+
+            // Control buttons
+            elements.sendBtn.addEventListener('click', () => sendMessage('smart'));
+            elements.fastBtn.addEventListener('click', () => sendMessage('fast'));
+            elements.clearBtn.addEventListener('click', clearInput);
+
+            // Provider selection
+            document.querySelectorAll('.provider-btn[data-provider]').forEach(btn => {
+                btn.addEventListener('click', handleProviderSelection);
+            });
+
+            // OpenRouter model selection
+            elements.openrouterModelSelect.addEventListener('change', handleModelSelection);
+
+            // Action buttons
+            elements.clearCacheBtn.addEventListener('click', clearCache);
+            elements.clearChatBtn.addEventListener('click', clearChat);
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', handleKeyboardShortcuts);
+        }
+
+        function handleInputChange(e) {
+            autoResizeTextarea(e.target);
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage('smart');
             }
         }
 
-        // Toast notifications
-        function showToast(message, type = 'info') {
-            const toast = elements.toast;
-            toast.textContent = message;
-            toast.className = `toast show ${type}`;
+        function handleProviderSelection(e) {
+            const btn = e.currentTarget;
+            const provider = btn.dataset.provider;
             
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            if (provider) {
+                // Update UI
+                document.querySelectorAll('.provider-btn[data-provider]').forEach(b => 
+                    b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Show/hide model selector for OpenRouter
+                if (provider === 'openrouter') {
+                    elements.openrouterModels.classList.add('show');
+                } else {
+                    elements.openrouterModels.classList.remove('show');
+                }
+                
+                // Update state
+                AppState.selectedProvider = provider;
+                
+                const names = {
+                    auto: 'Auto-Select',
+                    openrouter: 'OpenRouter',
+                    ollama: 'Ollama Local',
+                    openai: 'OpenAI GPT-4',
+                    deepseek: 'DeepSeek'
+                };
+                
+                showToast(`Switched to ${names[provider]}`, 'success');
+            }
         }
 
-        // Auto-resize textarea
-        function autoResizeTextarea(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        function handleModelSelection(e) {
+            AppState.selectedModel = e.target.value;
+            const modelName = e.target.selectedOptions[0].text;
+            showToast(`Model: ${modelName}`, 'success');
         }
 
-        // Add message to chat
-        function addMessage(text, sender, metadata = null) {
+        function handleKeyboardShortcuts(e) {
+            // Ctrl/Cmd + K: Focus input
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                elements.messageInput.focus();
+            }
+            
+            // Ctrl/Cmd + L: Clear chat
+            if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
+                e.preventDefault();
+                clearChat();
+            }
+            
+            // Escape: Clear input
+            if (e.key === 'Escape') {
+                clearInput();
+            }
+        }
+
+        // Main message sending function
+        async function sendMessage(mode = 'smart') {
+            const message = elements.messageInput.value.trim();
+            
+            if (!message || AppState.isTyping) return;
+
+            // Add user message
+            addMessage(message, 'user');
+            
+            // Clear input
+            elements.messageInput.value = '';
+            autoResizeTextarea(elements.messageInput);
+            
+            // Show typing indicator
+            showTypingIndicator();
+            AppState.isTyping = true;
+            toggleControls(false);
+
+            const startTime = Date.now();
+
+            try {
+                const endpoint = mode === 'fast' ? '/api/chat/fast' : '/api/chat';
+                const requestData = mode === 'fast' 
+                    ? { message }
+                    : { 
+                        message, 
+                        provider: AppState.selectedProvider === 'auto' ? null : AppState.selectedProvider,
+                        options: { 
+                            maxTokens: 1000, 
+                            temperature: 0.7,
+                            openrouterModel: AppState.selectedModel || null
+                        }
+                    };
+
+                console.log(`🚀 Sending ${mode} request...`, requestData);
+
+                const response = await fetch(`${AppState.serverUrl}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                const responseTime = Date.now() - startTime;
+
+                hideTypingIndicator();
+
+                if (data.reply) {
+                    const metadata = {
+                        provider: data.metadata?.provider || data.provider,
+                        model: data.metadata?.model,
+                        responseTime: data.metadata?.responseTime || data.responseTime || responseTime,
+                        cached: data.metadata?.cached || data.cached || false,
+                        fallbackUsed: data.metadata?.fallbackUsed || false,
+                        mode: mode
+                    };
+                    
+                    addMessage(data.reply, 'bot', metadata);
+                    updateStats(metadata);
+                } else {
+                    throw new Error('No response received');
+                }
+
+            } catch (error) {
+                console.error('❌ Message error:', error);
+                hideTypingIndicator();
+                
+                addMessage(`⚠️ Error: ${error.message}. Please check your connection and try again.`, 'bot', {
+                    error: true,
+                    responseTime: Date.now() - startTime
+                });
+                
+                showToast('Failed to send message', 'error');
+            } finally {
+                AppState.isTyping = false;
+                toggleControls(true);
+            }
+        }
+
+        function addMessage(text, sender, metadata = {}) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}`;
             
             const avatar = document.createElement('div');
             avatar.className = 'message-avatar';
-            avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+            avatar.innerHTML = sender === 'user' 
+                ? '<i class="fas fa-user"></i>' 
+                : '<i class="fas fa-robot"></i>';
             
             const content = document.createElement('div');
             content.className = 'message-content';
-            content.innerHTML = text.replace(/\n/g, '<br>');
+            content.innerHTML = formatText(text);
             
-            if (metadata && sender === 'bot') {
+            // Add metadata for bot messages
+            if (sender === 'bot' && !metadata.error && Object.keys(metadata).length > 0) {
                 const metadataDiv = document.createElement('div');
                 metadataDiv.className = 'message-metadata';
                 
-                if (metadata.provider) {
-                    const providerBadge = document.createElement('span');
-                    providerBadge.className = `metadata-badge ${metadata.provider}`;
-                    providerBadge.textContent = metadata.providerName || metadata.provider;
-                    metadataDiv.appendChild(providerBadge);
-                }
-                
-                if (metadata.model) {
-                    const modelBadge = document.createElement('span');
-                    modelBadge.className = 'metadata-badge';
-                    modelBadge.textContent = metadata.model;
-                    metadataDiv.appendChild(modelBadge);
-                }
+                const badges = [];
                 
                 if (metadata.responseTime) {
-                    const timeBadge = document.createElement('span');
-                    timeBadge.className = 'metadata-badge';
-                    timeBadge.textContent = `${metadata.responseTime}ms`;
-                    metadataDiv.appendChild(timeBadge);
+                    badges.push(`<span class="metadata-badge">${metadata.responseTime}ms</span>`);
+                }
+                
+                if (metadata.provider) {
+                    const providerNames = {
+                        ollama: 'Ollama',
+                        openai: 'GPT-4',
+                        deepseek: 'DeepSeek',
+                        openrouter: 'OpenRouter'
+                    };
+                    let badgeClass = '';
+                    if (metadata.provider === 'openrouter') {
+                        badgeClass = ' openrouter';
+                    }
+                    badges.push(`<span class="metadata-badge${badgeClass}">${providerNames[metadata.provider] || metadata.provider}</span>`);
+                }
+
+                if (metadata.model && metadata.provider === 'openrouter') {
+                    const modelDisplayNames = {
+                        'anthropic/claude-3-opus': 'Claude 3 Opus',
+                        'anthropic/claude-3-sonnet': 'Claude 3 Sonnet',
+                        'anthropic/claude-3-haiku': 'Claude 3 Haiku',
+                        'openai/gpt-4': 'GPT-4',
+                        'openai/gpt-4-turbo': 'GPT-4 Turbo',
+                        'google/gemini-pro': 'Gemini Pro',
+                        'meta-llama/llama-3-70b-instruct': 'Llama 3 70B'
+                    };
+                    const displayName = modelDisplayNames[metadata.model] || metadata.model;
+                    let modelBadgeClass = '';
+                    if (metadata.model.includes('claude')) {
+                        modelBadgeClass = ' claude';
+                    }
+                    badges.push(`<span class="metadata-badge${modelBadgeClass}">${displayName}</span>`);
                 }
                 
                 if (metadata.cached) {
-                    const cacheBadge = document.createElement('span');
-                    cacheBadge.className = 'metadata-badge';
-                    cacheBadge.textContent = 'CACHED';
-                    metadataDiv.appendChild(cacheBadge);
+                    badges.push('<span class="metadata-badge">Cached</span>');
+                }
+
+                if (metadata.fallbackUsed) {
+                    badges.push('<span class="metadata-badge">Fallback</span>');
                 }
                 
+                if (metadata.mode && metadata.mode !== 'smart') {
+                    badges.push(`<span class="metadata-badge">${metadata.mode.toUpperCase()}</span>`);
+                }
+                
+                metadataDiv.innerHTML = badges.join(' ');
                 content.appendChild(metadataDiv);
             }
             
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(content);
-            
             elements.messagesContainer.appendChild(messageDiv);
+            
+            // Auto scroll
             elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
+            
+            // Add to history
+            AppState.messageHistory.push({ text, sender, metadata, timestamp: Date.now() });
             
             return messageDiv;
         }
 
-        // Show/hide typing indicator
-        function showTyping(show = true) {
-            AppState.isTyping = show;
-            elements.typingIndicator.style.display = show ? 'flex' : 'none';
-            if (show) {
-                elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
-            }
+        function formatText(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code style="background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 3px;">$1</code>')
+                .replace(/\n/g, '<br>')
+                .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: #60a5fa;">$1</a>');
         }
 
-        // Send message to AI
-        async function sendMessage(mode = 'smart') {
-            const text = elements.messageInput.value.trim();
-            if (!text || AppState.isTyping) return;
-
-            debug(`📤 Sending message: ${text.substring(0, 50)}...`);
-
-            // Add user message
-            addMessage(text, 'user');
-            elements.messageInput.value = '';
-            autoResizeTextarea(elements.messageInput);
-
-            // Show typing indicator
-            showTyping(true);
-
-            try {
-                const endpoint = mode === 'fast' ? '/api/chat/fast' : '/api/chat';
-                const requestBody = {
-                    message: text,
-                    provider: AppState.selectedProvider === 'auto' ? null : AppState.selectedProvider
-                };
-
-                // Add OpenRouter model if selected
-                if (AppState.selectedProvider === 'openrouter' && AppState.selectedModel) {
-                    requestBody.options = {
-                        openrouterModel: AppState.selectedModel
-                    };
-                }
-
-                debug(`📡 API Request: ${endpoint}`, requestBody);
-
-                const response = await fetch(`${AppState.serverUrl}${endpoint}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-
-                showTyping(false);
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(`HTTP ${response.status}: ${errorData.message || response.statusText}`);
-                }
-
-                const data = await response.json();
-                debug(`✅ API Response received`, data);
-
-                const botReply = data.reply || data.response || "No response received";
-                addMessage(botReply, 'bot', data.metadata);
-
-                // Update stats
-                updateStats(data.metadata);
-
-                AppState.messageHistory.push({ user: text, bot: botReply, metadata: data.metadata });
-
-            } catch (error) {
-                showTyping(false);
-                console.error('❌ API Error:', error);
-
-                let errorMsg = "⚠️ Error: ";
-                if (error.message.includes("Failed to fetch")) {
-                    errorMsg += "Cannot connect to server. Please check your connection.";
-                } else if (error.message.includes("404")) {
-                    errorMsg += "API endpoint not found.";
-                } else if (error.message.includes("500")) {
-                    errorMsg += "Server error. Please try again.";
-                } else {
-                    errorMsg += error.message || "Connection failed. Please try again.";
-                }
-
-                addMessage(errorMsg, 'bot');
-                showToast('Failed to send message', 'error');
-            }
+        function showTypingIndicator() {
+            elements.typingIndicator.style.display = 'flex';
+            elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
         }
 
-        // Update statistics display
-        function updateStats(metadata = {}) {
-            if (metadata) {
-                AppState.stats.totalRequests++;
-                if (metadata.responseTime) {
-                    AppState.stats.responseTime = metadata.responseTime;
-                }
-                if (metadata.cached) {
-                    AppState.stats.cacheHits++;
-                }
-            }
+        function hideTypingIndicator() {
+            elements.typingIndicator.style.display = 'none';
+        }
 
+        function toggleControls(enabled) {
+            elements.sendBtn.disabled = !enabled;
+            elements.fastBtn.disabled = !enabled;
+            elements.messageInput.disabled = !enabled;
+        }
+
+        function updateStats(metadata) {
+            AppState.stats.totalRequests++;
             elements.totalRequests.textContent = AppState.stats.totalRequests;
-            elements.responseTime.textContent = `${AppState.stats.responseTime}ms`;
-            elements.cacheHits.textContent = AppState.stats.cacheHits;
-        }
-
-        // Check server connection and update status
-        async function checkServerConnection() {
-            try {
-                debug('🔍 Checking server connection...');
-                
-                const healthResponse = await fetch(`${AppState.serverUrl}/api/health`, {
-                    signal: AbortSignal.timeout(5000)
-                });
-
-                if (healthResponse.ok) {
-                    elements.connectionDot.style.background = 'var(--accent)';
-                    elements.connectionText.textContent = 'Connected';
-                    showToast('✅ Server connected', 'success');
-                    
-                    // Check provider status
-                    checkProviderStatus();
-                } else {
-                    throw new Error('Health check failed');
-                }
-            } catch (error) {
-                console.warn('⚠️ Server connection failed:', error);
-                elements.connectionDot.style.background = 'var(--error)';
-                elements.connectionText.textContent = 'Connection Failed';
-                showToast('❌ Server connection failed', 'error');
+            
+            if (metadata.responseTime) {
+                elements.responseTime.textContent = `${metadata.responseTime}ms`;
+            }
+            
+            if (metadata.cached) {
+                AppState.stats.cacheHits++;
+                elements.cacheHits.textContent = AppState.stats.cacheHits;
             }
         }
 
-        // Check individual provider status
-        async function checkProviderStatus() {
-            try {
-                const response = await fetch(`${AppState.serverUrl}/api/providers/status`);
-                if (!response.ok) return;
-
-                const data = await response.json();
-                debug('📊 Provider status received', data);
-
-                // Update status indicators
-                Object.keys(data.providers).forEach(provider => {
-                    const statusElement = elements[`${provider}Status`];
-                    if (statusElement) {
-                        const providerData = data.providers[provider];
-                        statusElement.className = `status-indicator status-${
-                            providerData.status === 'online' ? 'online' : 
-                            providerData.status === 'configured' ? 'online' : 'offline'
-                        }`;
-                    }
-                });
-
-            } catch (error) {
-                console.warn('Failed to check provider status:', error);
-            }
-        }
-
-        // Handle input changes
-        function handleInputChange() {
-            autoResizeTextarea(elements.messageInput);
-        }
-
-        // Handle key press
-        function handleKeyPress(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendMessage('smart');
-            }
-        }
-
-        // Clear input
         function clearInput() {
             elements.messageInput.value = '';
             autoResizeTextarea(elements.messageInput);
             elements.messageInput.focus();
         }
 
-        // Clear chat history
         function clearChat() {
-            const messages = elements.messagesContainer.querySelectorAll('.message:not(.welcome-message)');
-            messages.forEach(msg => msg.remove());
-            AppState.messageHistory = [];
-            showToast('Chat cleared', 'success');
+            if (confirm('Clear all messages?')) {
+                // Keep welcome message, remove others
+                const welcomeMsg = elements.messagesContainer.querySelector('.welcome-message').closest('.message');
+                elements.messagesContainer.innerHTML = '';
+                elements.messagesContainer.appendChild(welcomeMsg);
+                elements.messagesContainer.appendChild(elements.typingIndicator);
+                
+                AppState.messageHistory = [];
+                showToast('Chat cleared', 'success');
+            }
         }
 
-        // Clear cache
         async function clearCache() {
             try {
                 const response = await fetch(`${AppState.serverUrl}/api/cache/clear`, {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
                 });
                 
                 if (response.ok) {
                     const data = await response.json();
-                    showToast(`Cache cleared (${data.entriesCleared} entries)`, 'success');
+                    showToast(`Cache cleared: ${data.entriesCleared} entries`, 'success');
                 } else {
                     throw new Error('Failed to clear cache');
                 }
@@ -1082,142 +1118,115 @@
             }
         }
 
-        // Test connection
-        async function testConnection() {
-            showToast('Testing connection...', 'info');
-            await checkServerConnection();
-        }
-
-        // Provider selection
-        function selectProvider(provider) {
-            AppState.selectedProvider = provider;
-            
-            // Update UI
-            document.querySelectorAll('.provider-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            document.querySelector(`[data-provider="${provider}"]`).classList.add('active');
-            
-            // Show/hide OpenRouter model selector
-            if (provider === 'openrouter') {
-                elements.openrouterModels.classList.add('show');
-            } else {
-                elements.openrouterModels.classList.remove('show');
+        async function loadOpenRouterModels() {
+            try {
+                const response = await fetch(`${AppState.serverUrl}/api/openrouter/models`);
+                if (response.ok) {
+                    const data = await response.json();
+                    AppState.availableModels = data.models || [];
+                    console.log('📋 Loaded OpenRouter models:', AppState.availableModels.length);
+                }
+            } catch (error) {
+                console.log('⚠️ Could not load OpenRouter models:', error.message);
             }
+        }
+
+        function autoResizeTextarea(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+        }
+
+        function showToast(message, type = 'info') {
+            elements.toast.textContent = message;
+            elements.toast.className = `toast show ${type}`;
             
-            showToast(`Selected: ${provider}`, 'success');
+            setTimeout(() => {
+                elements.toast.classList.remove('show');
+            }, 3000);
         }
 
-        // Model selection for OpenRouter
-        function selectOpenRouterModel(model) {
-            AppState.selectedModel = model;
-            debug(`Selected OpenRouter model: ${model}`);
+        // Server Communication
+        async function checkServerConnection() {
+            try {
+                const response = await fetch(`${AppState.serverUrl}/api/health`);
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    elements.connectionDot.style.background = 'var(--accent)';
+                    elements.connectionText.textContent = 'Connected';
+                } else {
+                    elements.connectionDot.style.background = 'var(--warning)';
+                    elements.connectionText.textContent = 'Degraded';
+                }
+            } catch (error) {
+                elements.connectionDot.style.background = 'var(--error)';
+                elements.connectionText.textContent = 'Disconnected';
+                showToast('Server connection failed', 'error');
+            }
         }
 
-        // Initialize App
-        document.addEventListener('DOMContentLoaded', function() {
-            debug('🚀 Initializing Multi-AI Chatbot...');
-            initializeApp();
-            setupEventListeners();
-            checkServerConnection();
-            startStatsUpdates();
+        async function updateProviderStatus() {
+            try {
+                const response = await fetch(`${AppState.serverUrl}/api/providers/status`);
+                const data = await response.json();
+                
+                // Update status indicators
+                const updateStatus = (element, provider) => {
+                    const status = data.providers[provider]?.status;
+                    if (element) {
+                        element.className = `status-indicator status-${
+                            status === 'online' ? 'online' : 
+                            status === 'configured' ? 'online' :
+                            status === 'not-configured' ? 'offline' : 'unknown'
+                        }`;
+                    }
+                };
+                
+                updateStatus(elements.ollamaStatus, 'ollama');
+                updateStatus(elements.openaiStatus, 'openai');
+                updateStatus(elements.deepseekStatus, 'deepseek');
+                updateStatus(elements.openrouterStatus, 'openrouter');
+                
+            } catch (error) {
+                console.error('Failed to update provider status:', error);
+            }
+        }
+
+        async function getServerStats() {
+            try {
+                const response = await fetch(`${AppState.serverUrl}/api/stats`);
+                const data = await response.json();
+                
+                if (data.uptime?.formatted) {
+                    elements.uptime.textContent = data.uptime.formatted;
+                }
+                
+            } catch (error) {
+                console.error('Failed to get server stats:', error);
+            }
+        }
+
+        function startStatsUpdates() {
+            // Update every 10 seconds
+            setInterval(() => {
+                getServerStats();
+                updateProviderStatus();
+            }, 10000);
+            
+            // Initial update
+            setTimeout(() => {
+                getServerStats();
+                updateProviderStatus();
+            }, 1000);
+        }
+
+        // Error handling
+        window.addEventListener('error', (e) => {
+            console.error('Global error:', e.error);
+            showToast('An unexpected error occurred', 'error');
         });
 
-        function initializeApp() {
-            debug('⚙️ Setting up initial configuration...');
-            autoResizeTextarea(elements.messageInput);
-            showToast('🎉 Multi-AI Assistant Ready!', 'success');
-            
-            // Enable debug mode with triple click on logo
-            let logoClickCount = 0;
-            document.querySelector('.logo').addEventListener('click', () => {
-                logoClickCount++;
-                if (logoClickCount >= 3) {
-                    AppState.debugMode = !AppState.debugMode;
-                    elements.debugInfo.style.display = AppState.debugMode ? 'block' : 'none';
-                    showToast(`Debug mode ${AppState.debugMode ? 'enabled' : 'disabled'}`, 'info');
-                    logoClickCount = 0;
-                }
-                setTimeout(() => logoClickCount = 0, 1000);
-            });
-        }
-
-        function setupEventListeners() {
-            debug('🎧 Setting up event listeners...');
-            
-            // Input handlers
-            elements.messageInput.addEventListener('input', handleInputChange);
-            elements.messageInput.addEventListener('keypress', handleKeyPress);
-
-            // Control buttons
-            elements.sendBtn.addEventListener('click', (e) => {
-                debug('📤 Send button clicked');
-                e.preventDefault();
-                sendMessage('smart');
-            });
-            
-            elements.fastBtn.addEventListener('click', (e) => {
-                debug('⚡ Fast button clicked');
-                e.preventDefault();
-                sendMessage('fast');
-            });
-            
-            elements.clearInputBtn.addEventListener('click', (e) => {
-                debug('🗑️ Clear input button clicked');
-                e.preventDefault();
-                clearInput();
-            });
-
-            // Provider selection
-            document.querySelectorAll('.provider-btn[data-provider]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const provider = btn.dataset.provider;
-                    debug(`🔄 Provider selected: ${provider}`);
-                    selectProvider(provider);
-                });
-            });
-
-            // OpenRouter model selection
-            elements.openrouterModelSelect.addEventListener('change', (e) => {
-                selectOpenRouterModel(e.target.value);
-            });
-
-            // Quick action buttons
-            elements.clearCacheBtn.addEventListener('click', clearCache);
-            elements.clearChatBtn.addEventListener('click', clearChat);
-            elements.testBtn.addEventListener('click', testConnection);
-        }
-
-        // Start periodic updates
-        function startStatsUpdates() {
-            // Update uptime every second
-            setInterval(() => {
-                const uptime = Date.now() - AppState.stats.uptime || Date.now();
-                const seconds = Math.floor(uptime / 1000);
-                const minutes = Math.floor(seconds / 60);
-                const hours = Math.floor(minutes / 60);
-                
-                let uptimeText;
-                if (hours > 0) {
-                    uptimeText = `${hours}h ${minutes % 60}m`;
-                } else if (minutes > 0) {
-                    uptimeText = `${minutes}m ${seconds % 60}s`;
-                } else {
-                    uptimeText = `${seconds}s`;
-                }
-                
-                elements.uptime.textContent = uptimeText;
-            }, 1000);
-            
-            // Check connection every 30 seconds
-            setInterval(checkServerConnection, 30000);
-        }
-
-        // Initialize stats uptime
-        AppState.stats.uptime = Date.now();
-        
-        debug('✅ Multi-AI Chatbot JavaScript loaded successfully');
+        console.log('🎉 Multi-AI Chatbot with OpenRouter Frontend Loaded!');
     </script>
 </body>
 </html>
