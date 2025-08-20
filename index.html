@@ -725,7 +725,7 @@
             selectedModel: null,
             isTyping: false,
             messageHistory: [],
-            serverUrl: 'https://multi-ai-chatbot-production.up.railway.app/api/chat',
+            serverUrl: 'https://multi-ai-chatbot-production.up.railway.app',
             stats: { totalRequests: 0, cacheHits: 0, responseTime: 0 },
             availableModels: []
         };
@@ -909,7 +909,7 @@
 
                 console.log(`🚀 Sending ${mode} request...`, requestData);
 
-                const response = await fetch(`${AppState.serverUrl}${endpoint}`, {
+                const response = await fetch(`${AppState.serverUrl}/api${endpoint}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestData)

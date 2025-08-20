@@ -1,5 +1,5 @@
 window.addEventListener('DOMContentLoaded', function() {
-    const serverUrl = "https://multi-ai-chatbot-production.up.railway.app/api/chat";
+    const serverUrl = "https://multi-ai-chatbot-production.up.railway.app";
     const input = document.getElementById("userInput");
     const sendBtn = document.getElementById("sendBtn");
     const messagesContainer = document.getElementById("messages");
@@ -25,7 +25,7 @@ window.addEventListener('DOMContentLoaded', function() {
         const typingMsg = addMessage("🤖 Thinking...", "bot");
 
         try {
-            const res = await fetch(serverUrl, {
+            const res = await fetch(`${serverUrl}/api/chat`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: text, provider: "ollama" })
@@ -78,18 +78,20 @@ window.addEventListener('DOMContentLoaded', function() {
     input.addEventListener("keypress", function(e) {
         if (e.key === "Enter") sendMessage();
     });
-
-    // Optional: test server connection on page load
-    (async function testConnection() {
-        try {
-            const res = await fetch(serverUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "Hello", provider: "ollama" }) });
+	
+	
+(async function testConnection() {
+    try {
+        const res = await fetch(`${serverUrl}/api/health`);
+        if (res.ok) {
             const data = await res.json();
             console.log("✅ Backend connected:", data);
-        } catch (err) {
-            console.error("❌ Backend connection failed:", err);
-            addMessage("⚠️ Warning: Cannot connect to backend server.", "bot");
         }
-    })();
+    } catch (err) {
+        console.error("❌ Backend connection failed:", err);
+        addMessage("⚠️ Warning: Cannot connect to backend server.", "bot");
+    }
+})();
 
     // Expose retry function globally
     window.retryLastMessage = retryLastMessage;
