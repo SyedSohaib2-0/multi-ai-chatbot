@@ -14,8 +14,8 @@ window.addEventListener('DOMContentLoaded', function() {
         return msg;
     }
 
-    // Send message
-    function sendMessage() {
+    // Send a message to the AI
+    async function sendMessage() {
         const text = input.value.trim();
         if (!text) return;
 
@@ -24,23 +24,53 @@ window.addEventListener('DOMContentLoaded', function() {
 
         const typingMsg = addMessage("🤖 Thinking...", "bot");
 
-        fetch(serverUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: text, provider: "ollama" })
-        })
-        .then(async res => {
+        try {
+            const res = await fetch(serverUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: text, provider: "ollama" })
+            });
+
             typingMsg.remove();
-            if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+            }
+
             const data = await res.json();
             const botReply = data.response || data.reply || "No response received";
             addMessage(botReply, "bot");
-        })
-        .catch(err => {
+
+            if (data.metadata) {
+                console.log(`Response from ${data.metadata.provider} in ${data.metadata.totalTime}ms`);
+            }
+
+        } catch (err) {
             typingMsg.remove();
             console.error("API Error:", err);
-            addMessage("⚠️ Error: Cannot connect to backend. Check logs.", "bot");
-        });
+            let errorMsg = "⚠️ Error: ";
+
+            if (err.message.includes("Failed to fetch")) {
+                errorMsg += "Cannot connect to server. Check backend.";
+            } else if (err.message.includes("404")) {
+                errorMsg += "API endpoint not found.";
+            } else if (err.message.includes("500")) {
+                errorMsg += "Server error. Check backend logs.";
+            } else {
+                errorMsg += "Connection failed. Try again.";
+            }
+
+            addMessage(errorMsg, "bot");
+        }
+    }
+
+    // Retry last user message
+    function retryLastMessage() {
+        const messages = document.querySelectorAll('.message.user');
+        if (messages.length > 0) {
+            input.value = messages[messages.length - 1].textContent;
+            sendMessage();
+        }
     }
 
     // Event listeners
@@ -49,18 +79,18 @@ window.addEventListener('DOMContentLoaded', function() {
         if (e.key === "Enter") sendMessage();
     });
 
-    // Optional: retry last message
-    window.retryLastMessage = function() {
-        const messages = document.querySelectorAll('.message.user');
-        if (messages.length > 0) {
-            input.value = messages[messages.length - 1].textContent;
-            sendMessage();
+    // Optional: test server connection on page load
+    (async function testConnection() {
+        try {
+            const res = await fetch(serverUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: "Hello", provider: "ollama" }) });
+            const data = await res.json();
+            console.log("✅ Backend connected:", data);
+        } catch (err) {
+            console.error("❌ Backend connection failed:", err);
+            addMessage("⚠️ Warning: Cannot connect to backend server.", "bot");
         }
-    };
+    })();
 
-    // Optional: test server connection
-    fetch(serverUrl)
-        .then(res => res.json())
-        .then(data => console.log("✅ Backend connected:", data))
-        .catch(err => addMessage("⚠️ Warning: Cannot connect to backend.", "bot"));
+    // Expose retry function globally
+    window.retryLastMessage = retryLastMessage;
 });
