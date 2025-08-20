@@ -1,5 +1,5 @@
 window.addEventListener('DOMContentLoaded', function() {
-    const serverUrl = "https://multi-ai-chatbot-production.up.railway.app/api/generate";
+    const serverUrl = "https://multi-ai-chatbot-production.up.railway.app/api/chat";
     const input = document.getElementById("userInput");
     const sendBtn = document.getElementById("sendBtn");
     const messagesContainer = document.getElementById("messages");
