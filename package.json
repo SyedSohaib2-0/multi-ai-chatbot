@@ -1,263 +1,33 @@
 {
-  "name": "multi-ai-chatbot-enhanced",
-  "version": "2.1.0",
-  "description": "A modern multi-AI chatbot with authentication, file upload, PDF processing, and 400+ AI models via OpenRouter",
-  "type": "module",
+  "name": "multi-ai-chatbot",
+  "version": "2.0.0",
+  "description": "Multi-AI Chatbot with OpenRouter integration",
   "main": "server.js",
+  "type": "commonjs",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "dev:nodemon": "nodemon server.js",
-    "build": "echo \"Static files ready for deployment\"",
-    "test": "echo \"No tests yet\" && exit 0",
-    "lint": "echo \"No linting configured yet\" && exit 0",
-    "setup": "echo \"Setting up environment...\" && npm install",
-    "health": "curl -f http://localhost:3000/api/health || exit 1",
-    "db:init": "node scripts/init-db.js",
-    "deploy:gcp": "gcloud app deploy",
-    "deploy:setup": "npm run build && npm run db:init"
+    "test": "echo \"No tests yet\" && exit 0"
   },
   "keywords": [
     "ai",
     "chatbot",
-    "multi-ai",
-    "authentication",
-    "file-upload",
-    "pdf-processing",
-    "mysql",
-    "ollama",
-    "openai",
-    "deepseek",
     "openrouter",
+    "openai",
     "claude",
-    "gpt-4",
-    "gemini",
-    "llama",
-    "mistral",
-    "node",
-    "express",
-    "api",
-    "machine-learning",
-    "artificial-intelligence",
-    "document-analysis",
-    "cloud-deployment"
+    "gpt-4"
   ],
-  "author": "Your Name <your.email@example.com>",
+  "author": "Your Name",
   "license": "MIT",
-  "homepage": "https://github.com/yourusername/multi-ai-chatbot-enhanced#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yourusername/multi-ai-chatbot-enhanced.git"
-  },
-  "bugs": {
-    "url": "https://github.com/yourusername/multi-ai-chatbot-enhanced/issues"
-  },
   "dependencies": {
-    "axios": "^1.11.0",
-    "bcrypt": "^5.1.1",
-    "bcryptjs": "^3.0.2",
-    "compression": "^1.7.4",
     "cors": "^2.8.5",
-    "dotenv": "^16.6.1",
+    "dotenv": "^16.4.5",
     "express": "^4.21.2",
-    "express-mysql-session": "^3.0.0",
-    "express-rate-limit": "^7.5.1",
-    "express-session": "^1.18.2",
-    "express-validator": "^7.0.1",
-    "helmet": "^7.2.0",
-    "jsonwebtoken": "^9.0.2",
-    "mammoth": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
-    "mysql2": "^3.14.3",
+    "helmet": "^7.1.0",
     "node-cache": "^5.1.2",
-    "node-fetch": "^3.3.2",
-    "pdf.js-extract": "^0.2.1"
-  },
-  "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
-    "@types/express": "^4.17.21",
-    "@types/jsonwebtoken": "^9.0.5",
-    "@types/multer": "^1.4.11",
-    "@types/node": "^20.10.5",
-    "eslint": "^8.56.0",
-    "nodemon": "^3.0.2"
+    "node-fetch": "^3.3.2"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
-  },
-  "config": {
-    "supported_providers": [
-      "openrouter",
-      "openai",
-      "deepseek",
-      "ollama"
-    ],
-    "default_port": 3000,
-    "cache_ttl": 300,
-    "max_file_size": "10MB",
-    "supported_file_types": [
-      "application/pdf",
-      "text/plain",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ]
-  },
-  "ai_models": {
-    "openrouter": {
-      "free_models": [
-        "mistralai/mistral-7b-instruct:free",
-        "mistralai/mixtral-8x7b-instruct:free",
-        "meta-llama/llama-3.1-8b-instruct:free",
-        "qwen/qwen-2.5-7b-instruct:free",
-        "deepseek/deepseek-coder-6.7b-instruct:free"
-      ],
-      "premium_models": [
-        "anthropic/claude-3.5-sonnet",
-        "anthropic/claude-3-opus",
-        "openai/gpt-4o",
-        "openai/gpt-4o-mini",
-        "google/gemini-1.5-pro",
-        "google/gemini-1.5-flash",
-        "meta-llama/llama-3.1-70b-instruct",
-        "meta-llama/llama-3.1-405b-instruct"
-      ]
-    },
-    "ollama": {
-      "recommended_models": [
-        "llama3.1:8b",
-        "mistral:7b",
-        "codellama:7b",
-        "phi3:mini"
-      ]
-    }
-  },
-  "database": {
-    "type": "MySQL",
-    "required_tables": [
-      "users",
-      "chat_sessions",
-      "chat_messages",
-      "uploaded_files"
-    ],
-    "features": [
-      "User Authentication",
-      "Session Management",
-      "Chat History Storage",
-      "File Upload Tracking",
-      "PDF Text Extraction Storage"
-    ]
-  },
-  "features": [
-    "Multiple AI Provider Support",
-    "OpenRouter Integration (400+ models)",
-    "User Authentication & Registration",
-    "File Upload (PDF, TXT, DOC)",
-    "PDF Text Extraction",
-    "Document Analysis with AI",
-    "Chat History Persistence",
-    "Smart Provider Fallback",
-    "Response Caching",
-    "Rate Limiting",
-    "CORS Support",
-    "Security Headers",
-    "Environment Configuration",
-    "Health Check Endpoint",
-    "Real-time Provider Status",
-    "Google Cloud Platform Ready"
-  ],
-  "installation": {
-    "requirements": [
-      "Node.js 18+",
-      "MySQL 8.0+ (with password 'Admin')",
-      "OpenRouter API Key (recommended)",
-      "Ollama installed locally (optional)",
-      "OpenAI API Key (optional)",
-      "DeepSeek API Key (optional)"
-    ],
-    "setup_commands": [
-      "git clone <repository>",
-      "cd multi-ai-chatbot-enhanced",
-      "npm install",
-      "cp .env.example .env",
-      "# Edit .env with your API keys and database config",
-      "npm run db:init",
-      "npm run start"
-    ],
-    "mysql_setup": [
-      "CREATE DATABASE chatbot_users;",
-      "CREATE USER 'chatbot'@'localhost' IDENTIFIED BY 'Admin';",
-      "GRANT ALL PRIVILEGES ON chatbot_users.* TO 'chatbot'@'localhost';",
-      "FLUSH PRIVILEGES;"
-    ]
-  },
-  "environment_variables": {
-    "required": [
-      "DB_HOST=localhost",
-      "DB_USER=root",
-      "DB_PASSWORD=Admin",
-      "DB_NAME=chatbot_users",
-      "SESSION_SECRET=your-session-secret-change-this"
-    ],
-    "optional": [
-      "OPENROUTER_API_KEY=your-openrouter-key",
-      "OPENAI_API_KEY=your-openai-key",
-      "DEEPSEEK_API_KEY=your-deepseek-key",
-      "OLLAMA_URL=http://localhost:11434",
-      "PORT=3000",
-      "CACHE_TTL=300",
-      "NODE_ENV=production"
-    ]
-  },
-  "google_cloud_deployment": {
-    "app_yaml_required": true,
-    "services": [
-      "Cloud SQL (MySQL)",
-      "App Engine",
-      "Cloud Storage (for file uploads)"
-    ],
-    "setup_steps": [
-      "1. Create Google Cloud Project",
-      "2. Enable App Engine API",
-      "3. Create Cloud SQL MySQL instance",
-      "4. Configure environment variables",
-      "5. Deploy with: gcloud app deploy"
-    ]
-  },
-  "api_endpoints": {
-    "authentication": [
-      "POST /api/auth/register - Register new user",
-      "POST /api/auth/login - Login user",
-      "POST /api/auth/logout - Logout user",
-      "GET /api/auth/me - Get current user"
-    ],
-    "file_management": [
-      "POST /api/files/upload - Upload file",
-      "GET /api/files - Get user files",
-      "DELETE /api/files/:id - Delete file"
-    ],
-    "chat": [
-      "POST /api/chat - Main chat with file context",
-      "POST /api/chat/fast - Fast responses",
-      "GET /api/chat/sessions - Get chat sessions",
-      "GET /api/chat/sessions/:id/messages - Get session messages"
-    ],
-    "system": [
-      "GET /api/health - Health check",
-      "GET /api/stats - Server statistics",
-      "GET /api/providers/status - Provider status",
-      "POST /api/cache/clear - Clear cache"
-    ]
-  },
-  "security_features": [
-    "Bcrypt password hashing",
-    "Session-based authentication",
-    "CSRF protection",
-    "Rate limiting",
-    "File type validation",
-    "File size limits",
-    "SQL injection protection",
-    "XSS protection via helmet",
-    "CORS configuration"
-  ]
+    "node": ">=18.0.0"
+  }
 }
