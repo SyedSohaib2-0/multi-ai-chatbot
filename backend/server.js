@@ -5,7 +5,6 @@ import NodeCache from 'node-cache';
 import { config } from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-app.use(cors());
 
 
 // Load environment variables
