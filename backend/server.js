@@ -5,7 +5,6 @@ import NodeCache from 'node-cache';
 import { config } from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import cors from 'cors';
 app.use(cors());
 
 
