@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Multi-AI Chatbot</title>
+    <meta name="description" content="Login to access Multi-AI Chatbot with OpenRouter, Claude, GPT-4, and local AI models">
+    <meta name="keywords" content="AI chatbot login, multi-ai, openrouter, claude, gpt-4, ollama">
+    <link rel="canonical" href="https://multi-ai-chatbot-production.up.railway.app/login">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --secondary: #06b6d4;
+            --accent: #10b981;
+            --error: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo i {
+            font-size: 48px;
+            color: var(--primary-light);
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 16px;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .login-btn {
+            width: 100%;
+            background: var(--primary);
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .login-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider span {
+            background: var(--bg-dark);
+            padding: 0 15px;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .register-link a {
+            color: var(--primary-light);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .alert.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+
+        .features {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .feature-item i {
+            color: var(--accent);
+            width: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 0 10px;
+            }
+            
+            .logo i {
+                font-size: 36px;
+            }
+            
+            .logo h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <i class="fas fa-robot"></i>
+            <h1>Multi-AI Chatbot</h1>
+            <p>Access 400+ AI Models</p>
+        </div>
+
+        <div id="alert" class="alert" style="display: none;"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    class="form-input" 
+                    placeholder="your@email.com" 
+                    required 
+                    autocomplete="email"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    class="form-input" 
+                    placeholder="Enter your password" 
+                    required 
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+        </form>
+
+        <div class="divider">
+            <span>or</span>
+        </div>
+
+        <div class="register-link">
+            <a href="register.html">Don't have an account? Register here</a>
+        </div>
+
+        <div class="features">
+            <div class="feature-item">
+                <i class="fas fa-check"></i>
+                <span>Access to Claude 3.5, GPT-4, Gemini Pro</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-check"></i>
+                <span>Free models via OpenRouter</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-check"></i>
+                <span>Local Ollama integration</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-check"></i>
+                <span>Smart model auto-selection</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://multi-ai-chatbot-production.up.railway.app/api';
+        
+        const elements = {
+            loginForm: document.getElementById('loginForm'),
+            email: document.getElementById('email'),
+            password: document.getElementById('password'),
+            loginBtn: document.getElementById('loginBtn'),
+            alert: document.getElementById('alert')
+        };
+
+        function showAlert(message, type) {
+            elements.alert.textContent = message;
+            elements.alert.className = `alert ${type}`;
+            elements.alert.style.display = 'block';
+        }
+
+        function hideAlert() {
+            elements.alert.style.display = 'none';
+        }
+
+        elements.loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideAlert();
+
+            const email = elements.email.value.trim();
+            const password = elements.password.value;
+
+            if (!email || !password) {
+                showAlert('Please fill in all fields', 'error');
+                return;
+            }
+
+            elements.loginBtn.disabled = true;
+            elements.loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('Login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
+                } else {
+                    showAlert(data.message || 'Login failed', 'error');
+                }
+
+            } catch (error) {
+                showAlert('Connection error. Please try again.', 'error');
+            } finally {
+                elements.loginBtn.disabled = false;
+                elements.loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+            }
+        });
+
+        // Check if already logged in
+        fetch(`${API_BASE}/auth/me`, { credentials: 'include' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.user) {
+                    window.location.href = '/';
+                }
+            })
+            .catch(() => {
+                // User not logged in, stay on login page
+            });
+    </script>
+</body>
+</html>
