@@ -1,11 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- Replace the existing <head> section content in index.html with this enhanced version -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 Multi-AI Chatbot with OpenRouter</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Primary Meta Tags -->
+    <title>Multi-AI Chatbot | Access Claude 3.5, GPT-4, Gemini Pro & 400+ AI Models</title>
+    <meta name="title" content="Multi-AI Chatbot | Access Claude 3.5, GPT-4, Gemini Pro & 400+ AI Models">
+    <meta name="description" content="Free Multi-AI chatbot with access to Claude 3.5 Sonnet, GPT-4o, Gemini Pro, Llama 3.1, and 400+ AI models via OpenRouter. Smart auto-selection, local Ollama support, and premium AI models in one platform.">
+    <meta name="keywords" content="AI chatbot, Claude 3.5 Sonnet, GPT-4o, Gemini Pro, OpenRouter, Ollama, multi AI, free AI chat, Llama 3.1, Mistral, DeepSeek, artificial intelligence, machine learning">
+    <meta name="author" content="Multi-AI Chatbot">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://multi-ai-chatbot-production.up.railway.app/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://multi-ai-chatbot-production.up.railway.app/">
+    <meta property="og:title" content="Multi-AI Chatbot | Access Claude 3.5, GPT-4, Gemini Pro & 400+ AI Models">
+    <meta property="og:description" content="Free Multi-AI chatbot with access to Claude 3.5 Sonnet, GPT-4o, Gemini Pro, Llama 3.1, and 400+ AI models via OpenRouter. Smart auto-selection, local Ollama support, and premium AI models in one platform.">
+    <meta property="og:image" content="https://multi-ai-chatbot-production.up.railway.app/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Multi-AI Chatbot">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://multi-ai-chatbot-production.up.railway.app/">
+    <meta property="twitter:title" content="Multi-AI Chatbot | Access Claude 3.5, GPT-4, Gemini Pro & 400+ AI Models">
+    <meta property="twitter:description" content="Free Multi-AI chatbot with access to Claude 3.5 Sonnet, GPT-4o, Gemini Pro, Llama 3.1, and 400+ AI models. Smart auto-selection and premium AI models.">
+    <meta property="twitter:image" content="https://multi-ai-chatbot-production.up.railway.app/twitter-image.png">
+    <meta name="twitter:creator" content="@MultiAIChatbot">
+    
+    <!-- Additional Meta Tags -->
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="msapplication-TileColor" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Multi-AI Chat">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- DNS Prefetch -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="//openrouter.ai">
+    
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Multi-AI Chatbot",
+        "description": "Access Claude 3.5 Sonnet, GPT-4o, Gemini Pro, and 400+ AI models in one platform",
+        "url": "https://multi-ai-chatbot-production.up.railway.app/",
+        "applicationCategory": "Productivity",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "provider": {
+            "@type": "Organization",
+            "name": "Multi-AI Chatbot"
+        },
+        "featureList": [
+            "Claude 3.5 Sonnet access",
+            "GPT-4o integration",
+            "Google Gemini Pro",
+            "OpenRouter 400+ models",
+            "Local Ollama support",
+            "Smart model auto-selection",
+            "Free tier available",
+            "Premium AI models"
+        ]
+    }
+    </script>
+	
     <style>
         :root {
             --primary: #4f46e5;
@@ -261,7 +343,288 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
+         /* Enhanced Mobile Responsiveness */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 300px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .stat-card {
+                padding: 12px;
+            }
+            
+            .provider-info h4 {
+                font-size: 13px;
+            }
+            
+            .provider-info p {
+                font-size: 10px;
+            }
+        }
 
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+                height: 100vh;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+                overflow-x: auto;
+                overflow-y: hidden;
+                display: flex;
+                flex-direction: row;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            .logo {
+                min-width: 150px;
+                font-size: 16px;
+                margin-bottom: 0;
+            }
+            
+            .stats-grid {
+                min-width: 280px;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
+            }
+            
+            .stat-card {
+                padding: 10px 8px;
+            }
+            
+            .stat-value {
+                font-size: 16px;
+            }
+            
+            .stat-label {
+                font-size: 9px;
+            }
+            
+            .section {
+                min-width: 250px;
+                padding: 15px;
+                margin-bottom: 0;
+            }
+            
+            .section-title {
+                font-size: 11px;
+                margin-bottom: 10px;
+            }
+            
+            .provider-btn {
+                padding: 12px;
+                margin-bottom: 8px;
+            }
+            
+            .provider-icon {
+                width: 24px;
+                font-size: 14px;
+            }
+            
+            .provider-info h4 {
+                font-size: 12px;
+            }
+            
+            .provider-info p {
+                font-size: 9px;
+            }
+            
+            .chat-container {
+                flex: 1;
+                min-height: 0;
+            }
+            
+            .chat-header {
+                padding: 15px 20px;
+            }
+            
+            .chat-title {
+                font-size: 16px;
+            }
+            
+            .connection-status {
+                font-size: 11px;
+            }
+            
+            .messages-container {
+                padding: 20px 15px;
+            }
+            
+            .message {
+                gap: 12px;
+            }
+            
+            .message-avatar {
+                width: 30px;
+                height: 30px;
+                font-size: 12px;
+            }
+            
+            .message-content {
+                max-width: 85%;
+                padding: 12px 15px;
+                font-size: 14px;
+                line-height: 1.5;
+            }
+            
+            .message-metadata {
+                margin-top: 8px;
+                gap: 6px;
+            }
+            
+            .metadata-badge {
+                font-size: 9px;
+                padding: 1px 6px;
+            }
+            
+            .input-container {
+                padding: 15px;
+            }
+            
+            .message-input {
+                padding: 12px 100px 12px 15px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            
+            .control-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 11px;
+            }
+            
+            .input-controls {
+                right: 8px;
+                gap: 6px;
+            }
+            
+            /* Touch-friendly improvements */
+            .provider-btn,
+            .control-btn,
+            .login-btn,
+            .register-btn {
+                min-height: 44px; /* iOS recommended touch target */
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .sidebar {
+                padding: 10px;
+                gap: 10px;
+            }
+            
+            .logo {
+                min-width: 120px;
+                font-size: 14px;
+            }
+            
+            .stats-grid {
+                min-width: 240px;
+            }
+            
+            .section {
+                min-width: 200px;
+                padding: 12px;
+            }
+            
+            .chat-header {
+                padding: 12px 15px;
+            }
+            
+            .messages-container {
+                padding: 15px 10px;
+            }
+            
+            .message-content {
+                max-width: 90%;
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+            
+            .input-container {
+                padding: 12px 10px;
+            }
+            
+            .message-input {
+                padding: 10px 90px 10px 12px;
+                border-radius: 20px;
+            }
+            
+            .control-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 10px;
+            }
+        }
+        
+        /* Landscape mobile orientation */
+        @media (max-width: 896px) and (orientation: landscape) {
+            .app-container {
+                flex-direction: row;
+            }
+            
+            .sidebar {
+                width: 280px;
+                height: 100vh;
+                max-height: none;
+                overflow-y: auto;
+                overflow-x: hidden;
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* PWA and fullscreen support */
+        @media (display-mode: standalone) {
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            
+            .chat-header {
+                padding-top: calc(15px + env(safe-area-inset-top));
+            }
+            
+            .input-container {
+                padding-bottom: calc(15px + env(safe-area-inset-bottom));
+            }
+        }
+        
+        /* High DPI displays */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .message-avatar,
+            .provider-icon,
+            .control-btn {
+                image-rendering: -webkit-optimize-contrast;
+            }
+        }
+        
+        /* Dark mode support for devices */
+        @media (prefers-color-scheme: dark) {
+            /* Your existing dark theme is already good */
+        }
+        
+        /* Reduced motion preferences */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
         /* Messages */
         .messages-container {
             flex: 1;
@@ -1258,6 +1621,17 @@
             console.log('🎉 Multi-AI Chatbot Frontend Loaded!');
             console.log('🌐 Server URL:', AppState.baseUrl);
         });
+		// Check authentication on page load
+fetch('/api/auth/me', { credentials: 'include' })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.user) {
+            window.location.href = '/login.html';
+        }
+    })
+    .catch(() => {
+        window.location.href = '/login.html';
+    });
     </script>
 </body>
 </html>
