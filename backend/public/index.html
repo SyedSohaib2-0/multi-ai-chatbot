@@ -1,6 +1,6 @@
+
 <!DOCTYPE html>
 <html lang="en">
-<!-- Replace the existing <head> section content in index.html with this enhanced version -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +13,11 @@
     <meta name="author" content="Multi-AI Chatbot">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://multi-ai-chatbot-production.up.railway.app/">
+    
+    <!-- Font Awesome Icons - FIXED -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -143,6 +148,64 @@
             font-weight: 700;
             margin-bottom: 30px;
             color: var(--primary-light);
+        }
+
+        /* User Profile Section - NEW */
+        .user-profile {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        .user-details h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .user-details p {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 10px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .logout-btn:hover {
+            border-color: var(--error);
+            color: var(--error);
+            background: rgba(239, 68, 68, 0.1);
         }
 
         .section {
@@ -343,7 +406,8 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-         /* Enhanced Mobile Responsiveness */
+         
+        /* Enhanced Mobile Responsiveness */
         @media (max-width: 1024px) {
             .sidebar {
                 width: 300px;
@@ -388,6 +452,11 @@
             .logo {
                 min-width: 150px;
                 font-size: 16px;
+                margin-bottom: 0;
+            }
+            
+            .user-profile {
+                min-width: 200px;
                 margin-bottom: 0;
             }
             
@@ -509,8 +578,7 @@
             /* Touch-friendly improvements */
             .provider-btn,
             .control-btn,
-            .login-btn,
-            .register-btn {
+            .logout-btn {
                 min-height: 44px; /* iOS recommended touch target */
             }
         }
@@ -524,6 +592,11 @@
             .logo {
                 min-width: 120px;
                 font-size: 14px;
+            }
+            
+            .user-profile {
+                min-width: 180px;
+                padding: 12px;
             }
             
             .stats-grid {
@@ -625,6 +698,7 @@
                 transition-duration: 0.01ms !important;
             }
         }
+        
         /* Messages */
         .messages-container {
             flex: 1;
@@ -851,21 +925,6 @@
         .toast.error { border-left: 4px solid var(--error); }
         .toast.warning { border-left: 4px solid var(--warning); }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: 250px;
-                overflow-x: auto;
-            }
-            .app-container {
-                flex-direction: column;
-            }
-            .stats-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-
         /* Welcome Message */
         .welcome-message {
             background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(6, 182, 212, 0.1));
@@ -886,6 +945,22 @@
             <div class="logo">
                 <i class="fas fa-robot"></i>
                 Multi-AI Chat
+            </div>
+
+            <!-- User Profile Section - NEW -->
+            <div class="user-profile" id="userProfile" style="display: none;">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-details">
+                        <h4 id="userName">Loading...</h4>
+                        <p id="userEmail">Loading...</p>
+                    </div>
+                </div>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
             </div>
 
             <!-- Stats -->
@@ -913,7 +988,7 @@
                 <div class="section-title">🤖 AI Providers</div>
                 
                 <div class="provider-btn active" data-provider="auto">
-                    <div class="provider-icon"><i class="fas fa-magic"></i></div>
+                    <div class="provider-icon"><i class="fas fa-magic-wand-sparkles"></i></div>
                     <div class="provider-info">
                         <h4>Auto-Select</h4>
                         <p>Smart provider selection</p>
@@ -1091,7 +1166,8 @@
             // ✅ FIXED: Base server URL without endpoint
             baseUrl: 'https://multi-ai-chatbot-production.up.railway.app',
             stats: { totalRequests: 0, cacheHits: 0, responseTime: 0 },
-            availableModels: []
+            availableModels: [],
+            currentUser: null
         };
 
         // DOM Elements
@@ -1103,6 +1179,13 @@
             clearBtn: document.getElementById('clearBtn'),
             typingIndicator: document.getElementById('typingIndicator'),
             toast: document.getElementById('toast'),
+            
+            // User Profile Elements - NEW
+            userProfile: document.getElementById('userProfile'),
+            userName: document.getElementById('userName'),
+            userEmail: document.getElementById('userEmail'),
+            userAvatar: document.getElementById('userAvatar'),
+            logoutBtn: document.getElementById('logoutBtn'),
             
             // Stats
             totalRequests: document.getElementById('totalRequests'),
@@ -1131,16 +1214,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
             setupEventListeners();
-            checkServerConnection();
-            updateProviderStatus();
-            loadOpenRouterModels();
-            startStatsUpdates();
+            checkAuthentication();
         });
 
         function initializeApp() {
             console.log('🚀 Initializing Multi-AI Chatbot...');
             autoResizeTextarea(elements.messageInput);
-            showToast('🎉 Multi-AI Assistant Ready!', 'success');
         }
 
         function setupEventListeners() {
@@ -1152,6 +1231,9 @@
             elements.sendBtn.addEventListener('click', () => sendMessage('smart'));
             elements.fastBtn.addEventListener('click', () => sendMessage('fast'));
             elements.clearBtn.addEventListener('click', clearInput);
+
+            // Logout button - NEW
+            elements.logoutBtn.addEventListener('click', handleLogout);
 
             // Provider selection
             document.querySelectorAll('.provider-btn[data-provider]').forEach(btn => {
@@ -1167,6 +1249,80 @@
 
             // Keyboard shortcuts
             document.addEventListener('keydown', handleKeyboardShortcuts);
+        }
+
+        // NEW: Authentication Functions
+        async function checkAuthentication() {
+            try {
+                const response = await fetch(`${AppState.baseUrl}/api/auth/me`, { 
+                    credentials: 'include' 
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.user) {
+                        AppState.currentUser = data.user;
+                        displayUserProfile(data.user);
+                        showToast('Welcome back!', 'success');
+                        // Continue with normal app initialization
+                        checkServerConnection();
+                        updateProviderStatus();
+                        loadOpenRouterModels();
+                        startStatsUpdates();
+                        return;
+                    }
+                }
+                
+                // Not authenticated, redirect to login
+                window.location.href = '/login.html';
+                
+            } catch (error) {
+                console.error('Authentication check failed:', error);
+                window.location.href = '/login.html';
+            }
+        }
+
+        function displayUserProfile(user) {
+            elements.userName.textContent = user.name || 'User';
+            elements.userEmail.textContent = user.email || '';
+            
+            // Set user avatar initials
+            const initials = (user.name || user.email || 'U').charAt(0).toUpperCase();
+            elements.userAvatar.innerHTML = initials;
+            
+            // Show user profile
+            elements.userProfile.style.display = 'flex';
+        }
+
+        async function handleLogout() {
+            if (!confirm('Are you sure you want to logout?')) {
+                return;
+            }
+
+            try {
+                elements.logoutBtn.disabled = true;
+                elements.logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
+                
+                const response = await fetch(`${AppState.baseUrl}/api/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    showToast('Logged out successfully', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/login.html';
+                    }, 1000);
+                } else {
+                    throw new Error('Logout failed');
+                }
+
+            } catch (error) {
+                console.error('Logout error:', error);
+                showToast('Logout failed', 'error');
+                elements.logoutBtn.disabled = false;
+                elements.logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+            }
         }
 
         function handleInputChange(e) {
@@ -1237,7 +1393,7 @@
             }
         }
 
-        // ✅ FIXED: Main message sending function with correct endpoints
+        // ✅ FIXED: Main message sending function with correct endpoints and authentication
         async function sendMessage(mode = 'smart') {
             const message = elements.messageInput.value.trim();
             
@@ -1258,7 +1414,7 @@
             const startTime = Date.now();
 
             try {
-                // ✅ FIXED: Correct endpoint construction
+                // ✅ FIXED: Use authenticated endpoint for logged-in users
                 const endpoint = mode === 'fast' ? '/api/chat/fast' : '/api/chat';
                 const requestData = mode === 'fast' 
                     ? { message }
@@ -1274,14 +1430,22 @@
 
                 console.log(`🚀 Sending ${mode} request to: ${AppState.baseUrl}${endpoint}`);
 
-                // ✅ FIXED: Proper URL construction
+                // ✅ FIXED: Include credentials for authentication
                 const response = await fetch(`${AppState.baseUrl}${endpoint}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestData)
+                    body: JSON.stringify(requestData),
+                    credentials: 'include' // Include authentication cookies
                 });
 
                 if (!response.ok) {
+                    if (response.status === 401) {
+                        // Authentication expired, redirect to login
+                        showToast('Session expired. Please login again.', 'error');
+                        setTimeout(() => window.location.href = '/login.html', 2000);
+                        return;
+                    }
+                    
                     const errorData = await response.json();
                     throw new Error(errorData.message || `HTTP ${response.status}`);
                 }
@@ -1473,10 +1637,10 @@
 
         async function clearCache() {
             try {
-                // ✅ FIXED: Proper URL construction
                 const response = await fetch(`${AppState.baseUrl}/api/cache/clear`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
                 });
                 
                 if (response.ok) {
@@ -1492,7 +1656,6 @@
 
         async function loadOpenRouterModels() {
             try {
-                // ✅ FIXED: Proper URL construction
                 const response = await fetch(`${AppState.baseUrl}/api/openrouter/models`);
                 if (response.ok) {
                     const data = await response.json();
@@ -1519,6 +1682,7 @@
                 elements.toast.classList.remove('show');
             }, 3000);
         }
+
 
         // ✅ FIXED: Server Communication Functions
         async function checkServerConnection() {
