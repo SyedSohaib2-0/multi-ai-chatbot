@@ -243,38 +243,35 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Enhanced OpenRouter integration with smart model selection
-async function chatWithOpenRouter(prompt, options = {}) {
+// Enhanced OpenRouter integration with conversation history support
+async function chatWithOpenRouter(messages, options = {}) {
     let model;
     
     // Determine model based on request type
     if (options.openrouterModel) {
         model = AI_PROVIDERS.openrouter.models[options.openrouterModel] || options.openrouterModel;
     } else {
-        // Smart model selection based on prompt
-        const promptLower = prompt.toLowerCase();
+        // Smart model selection based on latest user message
+        const latestMessage = messages[messages.length - 1]?.content?.toLowerCase() || '';
         
-        if (/code|programming|debug/.test(promptLower)) {
+        if (/code|programming|debug/.test(latestMessage)) {
             model = options.preferFree ? 'deepseek/deepseek-coder-6.7b-instruct:free' : 'anthropic/claude-3.5-sonnet';
-        } else if (/creative|story|write/.test(promptLower)) {
+        } else if (/creative|story|write/.test(latestMessage)) {
             model = options.preferFree ? 'nousresearch/nous-hermes-2-mixtral-8x7b-dpo:free' : 'anthropic/claude-3-opus';
-        } else if (/complex|analyze|reason/.test(promptLower)) {
+        } else if (/complex|analyze|reason/.test(latestMessage)) {
             model = options.preferFree ? 'mistralai/mixtral-8x7b-instruct:free' : 'anthropic/claude-3.5-sonnet';
         } else {
-            // Default to free model
             model = AI_PROVIDERS.openrouter.defaultModel;
         }
     }
     
-    console.log(`OpenRouter Request: ${model} - ${prompt.substring(0, 50)}...`);
+    const latestUserMessage = messages[messages.length - 1]?.content?.substring(0, 50) || 'message';
+    console.log(`OpenRouter Request: ${model} - ${latestUserMessage}... [History: ${messages.length - 1} msgs]`);
     
     try {
         const requestBody = {
             model: model,
-            messages: [
-                { role: 'system', content: options.systemPrompt || 'You are a helpful AI assistant.' },
-                { role: 'user', content: prompt }
-            ],
+            messages: messages, // Use full conversation history
             max_tokens: options.maxTokens || 1000,
             temperature: options.temperature || 0.7,
             top_p: options.topP || 1,
@@ -304,11 +301,10 @@ async function chatWithOpenRouter(prompt, options = {}) {
             
             if (response.status === 404) {
                 console.error(`Model not found: ${model}. Falling back to default.`);
-                // Try with default free model
                 if (model !== AI_PROVIDERS.openrouter.defaultModel) {
-                    return await chatWithOpenRouter(prompt, { 
+                    return await chatWithOpenRouter(messages, { 
                         ...options, 
-                        openrouterModel: null // Use default
+                        openrouterModel: null
                     });
                 }
             }
@@ -319,7 +315,6 @@ async function chatWithOpenRouter(prompt, options = {}) {
         const data = await response.json();
         console.log('OpenRouter Response received');
         
-        // Track model usage
         stats.modelUsage[model] = (stats.modelUsage[model] || 0) + 1;
         
         return {
@@ -462,6 +457,214 @@ async function chatWithDeepSeek(prompt, options = {}) {
                         { role: 'system', content: options.systemPrompt || 'You are a helpful AI assistant.' },
                         { role: 'user', content: prompt }
                     ],
+                    max_tokens: options.maxTokens || 1000,
+                    temperature: options.temperature || 0.7
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                stats.modelUsage[data.model] = (stats.modelUsage[data.model] || 0) + 1;
+                return {
+                    content: data.choices[0]?.message?.content || 'No response generated',
+                    model: data.model,
+                    usage: data.usage,
+                    provider: 'deepseek'
+                };
+            }
+
+            if (response.status === 429) {
+                stats.rateLimits++;
+                throw new Error(`DeepSeek rate limit exceeded (429)`);
+            }
+
+            throw new Error(`DeepSeek API error: ${response.status} ${response.statusText}`);
+
+        } catch (error) {
+            if (attempt === maxRetries - 1) {
+                throw error;
+            }
+            attempt++;
+            await delay(1000 * attempt);
+        }
+    }
+}
+// New function to handle conversation history with all providers
+async function chatWithAIWithHistory(provider, messages, options = {}) {
+    const startTime = Date.now();
+    const lastUserMessage = messages[messages.length - 1]?.content || '';
+    const cacheKey = `${provider}:${options.openrouterModel || options.model || 'default'}:${Buffer.from(lastUserMessage + messages.length).toString('base64').slice(0, 50)}`;
+    
+    // Check cache first
+    if (cache.has(cacheKey)) {
+        stats.cacheHits++;
+        const cachedResult = cache.get(cacheKey);
+        return {
+            response: cachedResult.content,
+            provider,
+            cached: true,
+            responseTime: Date.now() - startTime,
+            model: cachedResult.model
+        };
+    }
+
+    let fallbackOrder;
+    if (provider === 'openrouter') {
+        fallbackOrder = ['openrouter', 'ollama'];
+    } else if (provider === 'openai') {
+        fallbackOrder = ['openai', 'openrouter', 'ollama'];
+    } else if (provider === 'deepseek') {
+        fallbackOrder = ['deepseek', 'openrouter', 'ollama'];
+    } else {
+        fallbackOrder = ['ollama', 'openrouter'];
+    }
+
+    let lastError = null;
+    
+    for (const currentProvider of fallbackOrder) {
+        try {
+            let result;
+            
+            switch (currentProvider) {
+                case 'openai':
+                    result = await chatWithOpenAIHistory(messages, options);
+                    break;
+                case 'deepseek':
+                    result = await chatWithDeepSeekHistory(messages, options);
+                    break;
+                case 'openrouter':
+                    result = await chatWithOpenRouter(messages, options);
+                    break;
+                case 'ollama':
+                    // Convert messages to single prompt for Ollama
+                    const prompt = messages.map(m => 
+                        m.role === 'user' ? `Human: ${m.content}` : 
+                        m.role === 'assistant' ? `Assistant: ${m.content}` :
+                        `System: ${m.content}`
+                    ).join('\n') + '\nAssistant: ';
+                    result = await chatWithOllama(prompt, options);
+                    break;
+                default:
+                    throw new Error(`Unknown provider: ${currentProvider}`);
+            }
+
+            const responseTime = Date.now() - startTime;
+            
+            stats.responseTimeStats.total += responseTime;
+            stats.responseTimeStats.count++;
+            stats.responseTimeStats.average = Math.round(stats.responseTimeStats.total / stats.responseTimeStats.count);
+            
+            stats.providerUsage[currentProvider]++;
+            
+            if (result) {
+                cache.set(cacheKey, result, 600);
+            }
+
+            if (currentProvider !== provider) {
+                stats.fallbacks++;
+                console.log(`Fallback used: ${provider} → ${currentProvider} (${lastError?.message || 'error'})`);
+            }
+
+            return {
+                response: result.content,
+                provider: currentProvider,
+                originalProvider: provider,
+                fallbackUsed: currentProvider !== provider,
+                cached: false,
+                responseTime,
+                model: result.model,
+                usage: result.usage
+            };
+
+        } catch (error) {
+            console.error(`${currentProvider} AI error:`, error.message);
+            lastError = error;
+            
+            if (currentProvider !== fallbackOrder[fallbackOrder.length - 1]) {
+                console.log(`Trying next fallback provider...`);
+                continue;
+            }
+        }
+    }
+    
+    stats.errors++;
+    throw lastError || new Error('All providers failed');
+}
+
+// Enhanced OpenAI with conversation history
+async function chatWithOpenAIHistory(messages, options = {}) {
+    const maxRetries = 3;
+    let attempt = 0;
+    
+    while (attempt < maxRetries) {
+        try {
+            const response = await fetch(AI_PROVIDERS.openai.url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${AI_PROVIDERS.openai.key}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: options.model || AI_PROVIDERS.openai.model,
+                    messages: messages,
+                    max_tokens: options.maxTokens || 1000,
+                    temperature: options.temperature || 0.7
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                stats.modelUsage[data.model] = (stats.modelUsage[data.model] || 0) + 1;
+                return {
+                    content: data.choices[0]?.message?.content || 'No response generated',
+                    model: data.model,
+                    usage: data.usage,
+                    provider: 'openai'
+                };
+            }
+
+            if (response.status === 429) {
+                stats.rateLimits++;
+                const retryAfter = response.headers.get('retry-after');
+                const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, attempt) * 1000;
+                
+                if (attempt < maxRetries - 1) {
+                    await delay(waitTime);
+                    attempt++;
+                    continue;
+                } else {
+                    throw new Error(`OpenAI rate limit exceeded (429)`);
+                }
+            }
+
+            throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+
+        } catch (error) {
+            if (attempt === maxRetries - 1 || !error.message.includes('429')) {
+                throw error;
+            }
+            attempt++;
+            await delay(1000 * attempt);
+        }
+    }
+}
+
+// Enhanced DeepSeek with conversation history
+async function chatWithDeepSeekHistory(messages, options = {}) {
+    const maxRetries = 2;
+    let attempt = 0;
+    
+    while (attempt < maxRetries) {
+        try {
+            const response = await fetch(AI_PROVIDERS.deepseek.url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${AI_PROVIDERS.deepseek.key}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: options.model || AI_PROVIDERS.deepseek.model,
+                    messages: messages,
                     max_tokens: options.maxTokens || 1000,
                     temperature: options.temperature || 0.7
                 })
@@ -844,7 +1047,7 @@ app.get('/api/auth/me', (req, res) => {
     }
 });
 
-// Enhanced chat endpoint with authentication
+// Enhanced chat endpoint with conversation memory
 app.post('/api/chat', requireAuth, async (req, res) => {
     const startTime = Date.now();
     const userId = req.session.user.id;
@@ -862,53 +1065,92 @@ app.post('/api/chat', requireAuth, async (req, res) => {
 
         console.log(`Chat Request from user ${userId}: ${provider || 'auto'} - "${message.substring(0, 50)}..."`);
 
+        // Get or create session ID
+        const sessionId = options.sessionId || `session-${userId}-${Date.now()}`;
+        
+        // Get conversation history from database (last 10 messages for context)
+        const [historyRows] = await dbPool.execute(`
+            SELECT message_type, content, ai_provider, ai_model, created_at 
+            FROM chat_messages 
+            WHERE session_id = ? AND user_id = ?
+            ORDER BY created_at DESC 
+            LIMIT 10
+        `, [sessionId, userId]);
+        
+        // Reverse to get chronological order
+        const conversationHistory = historyRows.reverse();
+        
+        // Build conversation context for AI
+        const messages = [];
+        
+        // Add system prompt with context
+        messages.push({
+            role: 'system',
+            content: options.systemPrompt || `You are a helpful AI assistant. You have access to our conversation history and can reference previous messages to provide better responses. Remember context from our chat and refer to it when relevant.`
+        });
+        
+        // Add conversation history
+        conversationHistory.forEach(msg => {
+            messages.push({
+                role: msg.message_type === 'user' ? 'user' : 'assistant',
+                content: msg.content
+            });
+        });
+        
+        // Add current message
+        messages.push({
+            role: 'user',
+            content: message
+        });
+
         // Select provider intelligently
         const selectedProvider = provider || selectOptimalProvider(message, options);
         
-        // Get AI response
-        const aiResult = await chatWithAI(selectedProvider, message, options);
+        // Enhanced options with conversation context
+        const enhancedOptions = {
+            ...options,
+            messages: messages, // Pass full conversation
+            maxTokens: options.maxTokens || 1000,
+            temperature: options.temperature || 0.7
+        };
+
+        // Get AI response with conversation context
+        const aiResult = await chatWithAIWithHistory(selectedProvider, messages, enhancedOptions);
         const totalTime = Date.now() - startTime;
 
-        // Save message to database
-        try {
-            const sessionId = options.sessionId || `session-${userId}-${Date.now()}`;
-            
-            // Save user message
-            await dbPool.execute(`
-                INSERT INTO chat_messages (session_id, user_id, message_type, content, created_at) 
-                VALUES (?, ?, 'user', ?, NOW())
-            `, [sessionId, userId, message]);
-            
-            // Save AI response
-            await dbPool.execute(`
-                INSERT INTO chat_messages (session_id, user_id, message_type, content, ai_provider, ai_model, response_time, metadata, created_at) 
-                VALUES (?, ?, 'assistant', ?, ?, ?, ?, ?, NOW())
-            `, [
-                sessionId, userId, 'assistant', aiResult.response, 
-                aiResult.provider, aiResult.model, aiResult.responseTime,
-                JSON.stringify(aiResult.usage || {})
-            ]);
-            
-            // Track API usage
-            await dbPool.execute(`
-                INSERT INTO api_usage (user_id, provider, model, request_count, tokens_used, response_time, date) 
-                VALUES (?, ?, ?, 1, ?, ?, CURDATE())
-                ON DUPLICATE KEY UPDATE 
-                request_count = request_count + 1,
-                tokens_used = tokens_used + VALUES(tokens_used),
-                response_time = (response_time + VALUES(response_time)) / 2
-            `, [
-                userId, aiResult.provider, aiResult.model || 'unknown', 
-                aiResult.usage?.total_tokens || 0, aiResult.responseTime
-            ]);
-            
-        } catch (dbError) {
-            console.error('Database save error:', dbError);
-            // Continue with response even if DB save fails
-        }
+        // Save user message to database
+        await dbPool.execute(`
+            INSERT INTO chat_messages (session_id, user_id, message_type, content, created_at) 
+            VALUES (?, ?, 'user', ?, NOW())
+        `, [sessionId, userId, message]);
+        
+        // Save AI response to database
+        await dbPool.execute(`
+            INSERT INTO chat_messages (session_id, user_id, message_type, content, ai_provider, ai_model, response_time, metadata, created_at) 
+            VALUES (?, ?, 'assistant', ?, ?, ?, ?, ?, NOW())
+        `, [
+            sessionId, userId, 'assistant', aiResult.response, 
+            aiResult.provider, aiResult.model, aiResult.responseTime,
+            JSON.stringify(aiResult.usage || {})
+        ]);
+        
+        // Track API usage
+        await dbPool.execute(`
+            INSERT INTO api_usage (user_id, provider, model, request_count, tokens_used, response_time, date) 
+            VALUES (?, ?, ?, 1, ?, ?, CURDATE())
+            ON DUPLICATE KEY UPDATE 
+            request_count = request_count + 1,
+            tokens_used = tokens_used + VALUES(tokens_used),
+            response_time = (response_time + VALUES(response_time)) / 2
+        `, [
+            userId, aiResult.provider, aiResult.model || 'unknown', 
+            aiResult.usage?.total_tokens || 0, aiResult.responseTime
+        ]);
 
         const response = {
             reply: aiResult.response,
+            sessionId: sessionId, // Return session ID for frontend
+            conversationLength: conversationHistory.length + 1, // Include current message
             metadata: {
                 provider: aiResult.provider,
                 originalProvider: aiResult.originalProvider || aiResult.provider,
@@ -919,11 +1161,12 @@ app.post('/api/chat', requireAuth, async (req, res) => {
                 totalTime,
                 cached: aiResult.cached,
                 usage: aiResult.usage,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                hasHistory: conversationHistory.length > 0
             }
         };
 
-        console.log(`Response sent to user ${userId}: ${aiResult.provider}/${aiResult.model} (${totalTime}ms)${aiResult.fallbackUsed ? ' [FALLBACK]' : ''}${aiResult.cached ? ' [CACHED]' : ''}`);
+        console.log(`Response sent to user ${userId}: ${aiResult.provider}/${aiResult.model} (${totalTime}ms) [History: ${conversationHistory.length} msgs]${aiResult.fallbackUsed ? ' [FALLBACK]' : ''}${aiResult.cached ? ' [CACHED]' : ''}`);
         res.json(response);
 
     } catch (error) {
@@ -940,8 +1183,7 @@ app.post('/api/chat', requireAuth, async (req, res) => {
         res.status(500).json(errorResponse);
     }
 });
-
-// Guest chat endpoint (no authentication required)
+// Guest chat endpoint with limited memory
 app.post('/api/chat/guest', optionalAuth, async (req, res) => {
     const startTime = Date.now();
     stats.totalRequests++;
@@ -958,22 +1200,54 @@ app.post('/api/chat/guest', optionalAuth, async (req, res) => {
 
         console.log(`Guest Chat Request: ${provider || 'auto'} - "${message.substring(0, 50)}..."`);
 
+        // For guests, use session-based memory (temporary, not persistent)
+        if (!req.session.guestHistory) {
+            req.session.guestHistory = [];
+        }
+
+        // Limit guest history to last 5 exchanges (10 messages)
+        if (req.session.guestHistory.length > 10) {
+            req.session.guestHistory = req.session.guestHistory.slice(-10);
+        }
+
+        // Build conversation for guest
+        const messages = [
+            {
+                role: 'system',
+                content: options.systemPrompt || 'You are a helpful AI assistant. This is a guest session with limited memory.'
+            }
+        ];
+
+        // Add guest history
+        req.session.guestHistory.forEach(msg => {
+            messages.push(msg);
+        });
+
+        // Add current message
+        messages.push({
+            role: 'user',
+            content: message
+        });
+
         // Limit guest users to free models only
         const guestOptions = {
             ...options,
             preferFree: true,
-            maxTokens: Math.min(options.maxTokens || 500, 500) // Limit guest responses
+            maxTokens: Math.min(options.maxTokens || 500, 500),
+            messages: messages
         };
 
-        // Select provider intelligently (prioritize free models for guests)
         const selectedProvider = provider || 'openrouter';
-        
-        // Get AI response
-        const aiResult = await chatWithAI(selectedProvider, message, guestOptions);
+        const aiResult = await chatWithAIWithHistory(selectedProvider, messages, guestOptions);
         const totalTime = Date.now() - startTime;
+
+        // Save to guest session memory
+        req.session.guestHistory.push({ role: 'user', content: message });
+        req.session.guestHistory.push({ role: 'assistant', content: aiResult.response });
 
         const response = {
             reply: aiResult.response,
+            conversationLength: req.session.guestHistory.length / 2, // Count exchanges
             metadata: {
                 provider: aiResult.provider,
                 originalProvider: aiResult.originalProvider || aiResult.provider,
@@ -985,11 +1259,12 @@ app.post('/api/chat/guest', optionalAuth, async (req, res) => {
                 cached: aiResult.cached,
                 usage: aiResult.usage,
                 timestamp: new Date().toISOString(),
-                mode: 'guest'
+                mode: 'guest',
+                hasHistory: req.session.guestHistory.length > 2
             }
         };
 
-        console.log(`Guest Response sent: ${aiResult.provider}/${aiResult.model} (${totalTime}ms)${aiResult.fallbackUsed ? ' [FALLBACK]' : ''}${aiResult.cached ? ' [CACHED]' : ''}`);
+        console.log(`Guest Response sent: ${aiResult.provider}/${aiResult.model} (${totalTime}ms) [History: ${req.session.guestHistory.length/2} exchanges]${aiResult.fallbackUsed ? ' [FALLBACK]' : ''}${aiResult.cached ? ' [CACHED]' : ''}`);
         res.json(response);
 
     } catch (error) {
